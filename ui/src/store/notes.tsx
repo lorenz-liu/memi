@@ -31,6 +31,7 @@ type NotesContextValue = {
     id: string,
     patch: Partial<Pick<Note, "title" | "body" | "pinned">>,
   ) => void;
+  deleteNote: (id: string) => void;
   clearHighlight: () => void;
 };
 
@@ -110,11 +111,32 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const deleteNote = useCallback((id: string) => {
+    setNotes((current) => current.filter((note) => note.id !== id));
+    setHighlightId((current) => (current === id ? null : current));
+  }, []);
+
   const clearHighlight = useCallback(() => setHighlightId(null), []);
 
   const value = useMemo(
-    () => ({ notes, ready, highlightId, addNote, updateNote, clearHighlight }),
-    [notes, ready, highlightId, addNote, updateNote, clearHighlight],
+    () => ({
+      notes,
+      ready,
+      highlightId,
+      addNote,
+      updateNote,
+      deleteNote,
+      clearHighlight,
+    }),
+    [
+      notes,
+      ready,
+      highlightId,
+      addNote,
+      updateNote,
+      deleteNote,
+      clearHighlight,
+    ],
   );
 
   return (

@@ -7,6 +7,7 @@ export const colors = {
   highlight: "#E6E6E6",
   correct: "#C8E6C9",
   wrong: "#7A1212",
+  danger: "#C62828",
 } as const;
 
 export const fonts = {

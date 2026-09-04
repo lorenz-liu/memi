@@ -1,4 +1,4 @@
-import { Children, type ReactNode } from "react";
+import { Children, forwardRef, type ReactNode } from "react";
 import {
   Platform,
   Text as RNText,
@@ -35,22 +35,20 @@ export function Text({ style, children, ...props }: TextProps) {
   );
 }
 
-export function TextInput({
-  style,
-  value,
-  defaultValue,
-  ...props
-}: TextInputProps) {
-  const text = String(value ?? defaultValue ?? "");
-  return (
-    <RNTextInput
-      {...props}
-      value={value}
-      defaultValue={defaultValue}
-      style={[style, { fontFamily: inputFontFamily(style, text) }]}
-    />
-  );
-}
+export const TextInput = forwardRef<RNTextInput, TextInputProps>(
+  function TextInput({ style, value, defaultValue, ...props }, ref) {
+    const text = String(value ?? defaultValue ?? "");
+    return (
+      <RNTextInput
+        ref={ref}
+        {...props}
+        value={value}
+        defaultValue={defaultValue}
+        style={[style, { fontFamily: inputFontFamily(style, text) }]}
+      />
+    );
+  },
+);
 
 function renderMixedChildren(
   children: ReactNode,

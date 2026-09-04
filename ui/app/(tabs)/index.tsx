@@ -1,9 +1,24 @@
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, FlatList, Pressable, View } from "react-native";
+import {
+  Animated,
+  FlatList,
+  Pressable,
+  type TextInput as RNTextInput,
+  View,
+} from "react-native";
 import Swipeable, {
   type SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
+import Reanimated, {
+  Easing,
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomToast } from "../../src/components/BottomToast";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
@@ -19,6 +34,12 @@ import { type Note, useNotes } from "../../src/store/notes";
 import { colors, fonts, space } from "../../src/theme";
 
 const DELETE_WIDTH = 72;
+const HEADER_ICON = 44;
+const LEFT_CLUSTER_WIDTH = HEADER_ICON * 2;
+const SEARCH_TIMING = {
+  duration: 280,
+  easing: Easing.out(Easing.cubic),
+};
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -31,7 +52,6 @@ export default function LibraryScreen() {
     replaceNotes,
   } = useNotes();
   const [query, setQuery] = useState("");
-  const [searching, setSearching] = useState(false);
   const [toast, setToast] = useState<{ message: string; token: number } | null>(
     null,
   );
@@ -97,66 +117,12 @@ export default function LibraryScreen() {
       style={{ flex: 1, backgroundColor: colors.bg }}
       edges={["top"]}
     >
-      <View
-        style={{
-          height: 56,
-          paddingHorizontal: space.md,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
-        {searching ? (
-          <>
-            <TextInput
-              autoFocus
-              value={query}
-              onChangeText={setQuery}
-              placeholder="Search"
-              placeholderTextColor={colors.muted}
-              underlineColorAndroid="transparent"
-              style={{
-                flex: 1,
-                fontSize: 18,
-                color: colors.ink,
-                paddingVertical: 8,
-              }}
-            />
-            <SquareIconButton
-              name="close"
-              size={44}
-              iconSize={22}
-              onPress={() => {
-                setQuery("");
-                setSearching(false);
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <SquareIconButton
-              name="export"
-              size={44}
-              iconSize={22}
-              style={{ backgroundColor: colors.white }}
-              onPress={() => void handleExport()}
-            />
-            <SquareIconButton
-              name="import"
-              size={44}
-              iconSize={22}
-              style={{ backgroundColor: colors.white }}
-              onPress={() => void handleImport()}
-            />
-            <View style={{ flex: 1 }} />
-            <SquareIconButton
-              name="search"
-              size={44}
-              iconSize={22}
-              onPress={() => setSearching(true)}
-            />
-          </>
-        )}
-      </View>
+      <LibraryHeader
+        query={query}
+        onQueryChange={setQuery}
+        onExport={() => void handleExport()}
+        onImport={() => void handleImport()}
+      />
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -205,6 +171,154 @@ export default function LibraryScreen() {
         message={toast?.message ?? null}
       />
     </SafeAreaView>
+  );
+}
+
+function LibraryHeader({
+  query,
+  onQueryChange,
+  onExport,
+  onImport,
+}: {
+  query: string;
+  onQueryChange: (value: string) => void;
+  onExport: () => void;
+  onImport: () => void;
+}) {
+  const [searching, setSearching] = useState(false);
+  const inputRef = useRef<RNTextInput>(null);
+  const progress = useSharedValue(0);
+
+  useEffect(() => {
+    if (searching) {
+      inputRef.current?.focus();
+    }
+  }, [searching]);
+
+  function openSearch() {
+    setSearching(true);
+    progress.value = withTiming(1, SEARCH_TIMING);
+  }
+
+  function closeSearch() {
+    inputRef.current?.blur();
+    onQueryChange("");
+    progress.value = withTiming(0, SEARCH_TIMING, (finished) => {
+      if (finished) {
+        runOnJS(setSearching)(false);
+      }
+    });
+  }
+
+  const leftStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      progress.value,
+      [0, 0.55],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+    width: interpolate(progress.value, [0, 1], [LEFT_CLUSTER_WIDTH, 0]),
+  }));
+
+  const inputStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      progress.value,
+      [0.25, 1],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const searchIconStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      progress.value,
+      [0, 0.45],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  const closeIconStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      progress.value,
+      [0.45, 1],
+      [0, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+
+  return (
+    <View
+      style={{
+        height: 56,
+        paddingHorizontal: space.md,
+        flexDirection: "row",
+        alignItems: "center",
+      }}
+    >
+      <Reanimated.View
+        pointerEvents={searching ? "none" : "auto"}
+        style={[{ overflow: "hidden", flexDirection: "row" }, leftStyle]}
+      >
+        <View style={{ width: LEFT_CLUSTER_WIDTH, flexDirection: "row" }}>
+          <SquareIconButton
+            name="export"
+            size={HEADER_ICON}
+            iconSize={22}
+            onPress={onExport}
+          />
+          <SquareIconButton
+            name="import"
+            size={HEADER_ICON}
+            iconSize={22}
+            onPress={onImport}
+          />
+        </View>
+      </Reanimated.View>
+      <Reanimated.View
+        pointerEvents={searching ? "auto" : "none"}
+        style={[{ flex: 1, justifyContent: "center" }, inputStyle]}
+      >
+        <TextInput
+          ref={inputRef}
+          value={query}
+          onChangeText={onQueryChange}
+          placeholder="Search"
+          placeholderTextColor={colors.muted}
+          underlineColorAndroid="transparent"
+          editable={searching}
+          style={{
+            fontSize: 18,
+            color: colors.ink,
+            paddingVertical: 8,
+          }}
+        />
+      </Reanimated.View>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => {
+          if (searching) {
+            closeSearch();
+          } else {
+            openSearch();
+          }
+        }}
+        style={({ pressed }) => ({
+          width: HEADER_ICON,
+          height: HEADER_ICON,
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: pressed ? 0.4 : 1,
+        })}
+      >
+        <Reanimated.View style={[{ position: "absolute" }, searchIconStyle]}>
+          <Icon name="search" size={22} color={colors.ink} />
+        </Reanimated.View>
+        <Reanimated.View style={[{ position: "absolute" }, closeIconStyle]}>
+          <Icon name="close" size={22} color={colors.ink} />
+        </Reanimated.View>
+      </Pressable>
+    </View>
   );
 }
 

@@ -46,7 +46,7 @@ export function NavBar({ state, navigation }: NavBarProps) {
             name={tab.icon}
             inverted={isAdd}
             iconSize={isAdd ? 30 : 26}
-            color={isAdd ? undefined : focused ? colors.muted : colors.ink}
+            color={isAdd ? undefined : focused ? colors.ink : colors.muted}
             onPress={() => {
               const route = state.routes[index];
               if (!route) {

@@ -31,7 +31,7 @@ const clozeCache = new Map<string, ClozeCard>();
 
 export default function TrainScreen() {
   const { notes } = useNotes();
-  const [mode, setMode] = useState<Mode>("repeat");
+  const [mode, setMode] = useState<Mode>("shuffle");
   const [deck, setDeck] = useState<Note[]>([]);
   const [index, setIndex] = useState(0);
   const [card, setCard] = useState<ClozeCard | null>(null);

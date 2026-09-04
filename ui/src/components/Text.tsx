@@ -1,79 +1,47 @@
-import { Children, forwardRef, type ReactNode } from "react";
+import { forwardRef } from "react";
 import {
-  Platform,
+  StyleSheet,
   Text as RNText,
   TextInput as RNTextInput,
   type TextInputProps,
   type TextProps,
+  type TextStyle,
 } from "react-native";
 
-import {
-  inputFontFamily,
-  resolveTypefaces,
-  splitFontRuns,
-  stackedFontFamily,
-} from "../lib/typeface";
+import { fonts } from "../theme";
 
-export function Text({ style, children, ...props }: TextProps) {
-  const { latin, cjk } = resolveTypefaces(style);
-
-  if (Platform.OS === "web") {
-    return (
-      <RNText
-        {...props}
-        style={[style, { fontFamily: stackedFontFamily(latin, cjk) }]}
-      >
-        {children}
-      </RNText>
-    );
-  }
-
-  return (
-    <RNText {...props} style={[style, { fontFamily: latin }]}>
-      {renderMixedChildren(children, latin, cjk)}
-    </RNText>
-  );
+export function Text({ style, ...props }: TextProps) {
+  return <RNText {...props} style={[style, typeface(style)]} />;
 }
 
 export const TextInput = forwardRef<RNTextInput, TextInputProps>(
-  function TextInput({ style, value, defaultValue, ...props }, ref) {
-    const text = String(value ?? defaultValue ?? "");
+  function TextInput({ style, ...props }, ref) {
     return (
-      <RNTextInput
-        ref={ref}
-        {...props}
-        value={value}
-        defaultValue={defaultValue}
-        style={[style, { fontFamily: inputFontFamily(style, text) }]}
-      />
+      <RNTextInput ref={ref} {...props} style={[style, typeface(style)]} />
     );
   },
 );
 
-function renderMixedChildren(
-  children: ReactNode,
-  latin: string,
-  cjk: string,
-): ReactNode {
-  return Children.map(children, (child) => {
-    if (typeof child === "string" || typeof child === "number") {
-      return renderRuns(String(child), latin, cjk);
-    }
-    return child;
-  });
+function typeface(style: TextProps["style"]): TextStyle {
+  const weight = isBoldWeight(
+    (StyleSheet.flatten(style) as TextStyle | undefined)?.fontWeight,
+  )
+    ? "700"
+    : "400";
+  return {
+    fontFamily: fonts.regular,
+    fontWeight: weight,
+    fontVariationSettings: `'wght' ${weight}`,
+  };
 }
 
-function renderRuns(text: string, latin: string, cjk: string): ReactNode {
-  const runs = splitFontRuns(text);
-  if (runs.length === 1 && runs[0].script === "latin") {
-    return text;
+function isBoldWeight(weight: TextStyle["fontWeight"]): boolean {
+  if (weight == null) {
+    return false;
   }
-  return runs.map((run) => (
-    <RNText
-      key={`${run.start}:${run.script}`}
-      style={{ fontFamily: run.script === "cjk" ? cjk : latin }}
-    >
-      {run.text}
-    </RNText>
-  ));
+  if (weight === "bold") {
+    return true;
+  }
+  const numeric = typeof weight === "string" ? Number(weight) : weight;
+  return Number.isFinite(numeric) && numeric >= 600;
 }

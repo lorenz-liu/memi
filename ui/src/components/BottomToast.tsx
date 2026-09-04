@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { colors, fonts, space } from "../theme";
+import { colors, space } from "../theme";
 import { Text } from "./Text";
 
 export function BottomToast({ message }: { message: string | null }) {
@@ -69,7 +69,7 @@ export function BottomToast({ message }: { message: string | null }) {
         style={{
           color: colors.bg,
           fontSize: 16,
-          fontFamily: fonts.bold,
+          fontWeight: "700",
           textAlign: "center",
         }}
       >

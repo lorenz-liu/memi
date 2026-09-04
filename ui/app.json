@@ -31,12 +31,7 @@
       [
         "expo-font",
         {
-          "fonts": [
-            "./assets/fonts/Thasadith-Regular.ttf",
-            "./assets/fonts/Thasadith-Bold.ttf",
-            "./assets/fonts/NotoSerifSC-Regular.ttf",
-            "./assets/fonts/NotoSerifSC-Bold.ttf"
-          ]
+          "fonts": ["./assets/fonts/NotoSerifSC-VariableFont_wght.ttf"]
         }
       ],
       "expo-sharing"

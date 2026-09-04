@@ -31,7 +31,7 @@ import {
   isCanceledError,
 } from "../../src/lib/backupFiles";
 import { type Note, useNotes } from "../../src/store/notes";
-import { colors, fonts, space } from "../../src/theme";
+import { colors, space } from "../../src/theme";
 
 const DELETE_WIDTH = 72;
 const HEADER_ICON = 44;
@@ -430,7 +430,7 @@ function LibraryRow({
               style={{
                 flex: 1,
                 fontSize: 20,
-                fontFamily: fonts.bold,
+                fontWeight: "700",
                 color: colors.ink,
                 paddingVertical: space.md,
               }}

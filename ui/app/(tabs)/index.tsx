@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text, TextInput } from "../../src/components/Text";
 import { type Note, useNotes } from "../../src/store/notes";
-import { colors, space } from "../../src/theme";
+import { colors, fonts, space } from "../../src/theme";
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -185,6 +185,7 @@ function LibraryRow({
             style={{
               flex: 1,
               fontSize: 20,
+              fontFamily: fonts.bold,
               color: colors.ink,
               paddingVertical: space.md,
             }}

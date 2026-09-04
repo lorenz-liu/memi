@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text, TextInput } from "../../src/components/Text";
 import { useNotes } from "../../src/store/notes";
-import { colors, space } from "../../src/theme";
+import { colors, fonts, space } from "../../src/theme";
 
 export default function NoteScreen() {
   const router = useRouter();
@@ -72,6 +72,7 @@ export default function NoteScreen() {
             style={{
               paddingHorizontal: space.lg,
               fontSize: 28,
+              fontFamily: fonts.bold,
               color: colors.ink,
               paddingBottom: space.md,
             }}
@@ -81,6 +82,7 @@ export default function NoteScreen() {
             style={{
               paddingHorizontal: space.lg,
               fontSize: 28,
+              fontFamily: fonts.bold,
               color: colors.ink,
               paddingBottom: space.md,
             }}

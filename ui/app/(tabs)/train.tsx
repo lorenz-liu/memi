@@ -21,7 +21,7 @@ import { Text } from "../../src/components/Text";
 import { type ClozeCard, generateCardCloze } from "../../src/lib/api";
 import { shuffleInPlace } from "../../src/lib/id";
 import { type Note, useNotes } from "../../src/store/notes";
-import { colors, space } from "../../src/theme";
+import { colors, fonts, space } from "../../src/theme";
 
 type Mode = "repeat" | "shuffle";
 type CheckState = "idle" | "correct" | "wrong";
@@ -206,6 +206,7 @@ export default function TrainScreen() {
             style={{
               color: colors.muted,
               fontSize: 14,
+              fontFamily: fonts.bold,
               marginBottom: space.md,
             }}
           >

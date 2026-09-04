@@ -20,18 +20,19 @@ import { ClozePrompt, gradeAnswers } from "../../src/components/ClozePrompt";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text } from "../../src/components/Text";
 import { type ClozeCard, generateCardCloze } from "../../src/lib/api";
+import { hapticCardChecked } from "../../src/lib/haptics";
 import { shuffleInPlace } from "../../src/lib/id";
 import { type Note, useNotes } from "../../src/store/notes";
+import { type CardOrder, useSettings } from "../../src/store/settings";
 import { colors, space } from "../../src/theme";
 
-type Mode = "repeat" | "shuffle";
 type CheckState = "idle" | "correct" | "wrong";
 
 const clozeCache = new Map<string, ClozeCard>();
 
 export default function TrainScreen() {
   const { notes } = useNotes();
-  const [mode, setMode] = useState<Mode>("shuffle");
+  const { t, cardOrder, haptics } = useSettings();
   const [deck, setDeck] = useState<Note[]>([]);
   const [index, setIndex] = useState(0);
   const [card, setCard] = useState<ClozeCard | null>(null);
@@ -57,7 +58,7 @@ export default function TrainScreen() {
   }, []);
 
   const rebuildDeck = useCallback(
-    (nextMode: Mode, keepNoteId?: string) => {
+    (nextMode: CardOrder, keepNoteId?: string) => {
       const ordered =
         nextMode === "shuffle" ? shuffleInPlace([...notes]) : [...notes];
       setDeck(ordered);
@@ -72,8 +73,8 @@ export default function TrainScreen() {
   );
 
   useEffect(() => {
-    rebuildDeck(mode);
-  }, [mode, rebuildDeck]);
+    rebuildDeck(cardOrder);
+  }, [cardOrder, rebuildDeck]);
 
   const current = deck[index] ?? null;
 
@@ -103,7 +104,7 @@ export default function TrainScreen() {
         }
       } catch {
         if (!cancelled) {
-          setError("Could not generate flashcard");
+          setError(t("generateFailed"));
         }
       } finally {
         if (!cancelled) {
@@ -115,7 +116,7 @@ export default function TrainScreen() {
     return () => {
       cancelled = true;
     };
-  }, [current]);
+  }, [current, t]);
 
   useEffect(() => {
     setAnswers({});
@@ -128,7 +129,7 @@ export default function TrainScreen() {
       clearTimeout(hintTimer.current);
       hintTimer.current = null;
     }
-  }, [card]);
+  }, [card, hintOpacity]);
 
   const go = useCallback(
     (delta: number) => {
@@ -184,7 +185,7 @@ export default function TrainScreen() {
             marginTop: space.xl,
           }}
         >
-          memi has nothing to quiz you on
+          {t("trainEmptyTitle")}
         </Text>
         <Text
           style={{
@@ -194,8 +195,7 @@ export default function TrainScreen() {
             marginTop: space.sm,
           }}
         >
-          based on your notes, memi uses ai to mask the key
-          words and turns them into cloze flashcards. come back here when you have at least one note taken. 
+          {t("trainEmptyBody")}
         </Text>
       </SafeAreaView>
     );
@@ -206,27 +206,6 @@ export default function TrainScreen() {
       style={{ flex: 1, backgroundColor: colors.bg }}
       edges={["top"]}
     >
-      <View
-        style={{
-          height: 56,
-          paddingHorizontal: space.sm,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <SquareIconButton
-          name="repeat"
-          active={mode === "repeat"}
-          onPress={() => setMode("repeat")}
-        />
-        <SquareIconButton
-          name="shuffle"
-          active={mode === "shuffle"}
-          onPress={() => setMode("shuffle")}
-        />
-      </View>
-
       <SwipePager
         canPrev={index > 0}
         canNext={index < deck.length - 1}
@@ -274,10 +253,7 @@ export default function TrainScreen() {
       </SwipePager>
 
       <Animated.View
-        style={[
-          { minHeight: 28, paddingHorizontal: space.lg },
-          hintStyle,
-        ]}
+        style={[{ minHeight: 28, paddingHorizontal: space.lg }, hintStyle]}
       >
         <Text style={{ color: colors.hint, fontSize: 16 }}>
           {hintText ?? " "}
@@ -301,7 +277,12 @@ export default function TrainScreen() {
             if (!card) {
               return;
             }
-            setCheckStates(gradeAnswers(card, answers));
+            const graded = gradeAnswers(card, answers);
+            setCheckStates(graded);
+            hapticCardChecked(
+              haptics,
+              Object.values(graded).every((state) => state === "correct"),
+            );
           }}
         />
       </View>

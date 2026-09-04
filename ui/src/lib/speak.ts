@@ -57,7 +57,11 @@ export function stopSpeak() {
   }
 }
 
-export async function toggleSpeak(id: string, text: string): Promise<void> {
+export async function toggleSpeak(
+  id: string,
+  text: string,
+  voice?: string,
+): Promise<void> {
   if (playingId === id) {
     stopSpeak();
     return;
@@ -76,7 +80,7 @@ export async function toggleSpeak(id: string, text: string): Promise<void> {
   try {
     await setAudioModeAsync({ playsInSilentMode: true });
     const dest = new File(Paths.cache, TTS_FILE);
-    const file = await File.downloadFileAsync(ttsUrl(trimmed), dest, {
+    const file = await File.downloadFileAsync(ttsUrl(trimmed, voice), dest, {
       idempotent: true,
       signal: controller.signal,
     });
@@ -105,6 +109,11 @@ export async function toggleSpeak(id: string, text: string): Promise<void> {
   }
 }
 
-export function speakText(noteId: string, body: string, title: string) {
-  return toggleSpeak(noteId, body.trim() || title);
+export function speakText(
+  noteId: string,
+  body: string,
+  title: string,
+  voice?: string,
+) {
+  return toggleSpeak(noteId, body.trim() || title, voice);
 }

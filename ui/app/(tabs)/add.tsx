@@ -1,4 +1,3 @@
-import * as Localization from "expo-localization";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -12,17 +11,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, TextInput } from "../../src/components/Text";
 import { generateCardTitle } from "../../src/lib/api";
 import { fallbackTitle } from "../../src/lib/cloze";
+import { hapticNoteAdded } from "../../src/lib/haptics";
 import { useNotes } from "../../src/store/notes";
+import { useSettings } from "../../src/store/settings";
 import { colors, space } from "../../src/theme";
-
-function deviceLanguage(): string {
-  const code = Localization.getLocales()[0]?.languageCode ?? "en";
-  return code.slice(0, 3).toLowerCase();
-}
 
 export default function AddScreen() {
   const router = useRouter();
   const { addNote } = useNotes();
+  const { t, language, haptics } = useSettings();
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,14 +34,15 @@ export default function AddScreen() {
     setError(null);
     let title = fallbackTitle(body);
     try {
-      const result = await generateCardTitle(body, deviceLanguage());
+      const result = await generateCardTitle(body, language);
       if (result.title.trim()) {
         title = result.title.trim();
       }
     } catch {
-      setError("Title generation failed; used a short excerpt");
+      setError(t("addTitleFailed"));
     }
     addNote({ title, body });
+    hapticNoteAdded(haptics);
     setText("");
     setSaving(false);
     router.replace("/(tabs)");
@@ -65,7 +63,7 @@ export default function AddScreen() {
           multiline
           autoFocus
           textAlignVertical="top"
-          placeholder="Write something"
+          placeholder={t("addPlaceholder")}
           placeholderTextColor={colors.muted}
           underlineColorAndroid="transparent"
           style={{
@@ -113,7 +111,7 @@ export default function AddScreen() {
                 fontWeight: "700",
               }}
             >
-              ADD
+              {t("add")}
             </Text>
           )}
         </Pressable>

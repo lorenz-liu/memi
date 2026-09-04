@@ -24,19 +24,13 @@ import { BottomToast } from "../../src/components/BottomToast";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text, TextInput } from "../../src/components/Text";
 import { Icon } from "../../src/icons/Icon";
-import {
-  exportNotes,
-  importFailureReason,
-  importNotes,
-  isCanceledError,
-} from "../../src/lib/backupFiles";
 import { speakText, useSpeakingId } from "../../src/lib/speak";
 import { type Note, useNotes } from "../../src/store/notes";
+import { useSettings } from "../../src/store/settings";
 import { colors, space } from "../../src/theme";
 
 const DELETE_WIDTH = 72;
 const HEADER_ICON = 44;
-const LEFT_CLUSTER_WIDTH = HEADER_ICON * 2;
 const SEARCH_TIMING = {
   duration: 280,
   easing: Easing.out(Easing.cubic),
@@ -44,20 +38,14 @@ const SEARCH_TIMING = {
 
 export default function LibraryScreen() {
   const router = useRouter();
-  const {
-    notes,
-    highlightId,
-    clearHighlight,
-    updateNote,
-    deleteNote,
-    replaceNotes,
-  } = useNotes();
+  const { notes, highlightId, clearHighlight, updateNote, deleteNote } =
+    useNotes();
+  const { t, voice } = useSettings();
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState<{ message: string; token: number } | null>(
     null,
   );
   const openRowClose = useRef<(() => void) | null>(null);
-  const fileBusy = useRef(false);
   const speakingId = useSpeakingId();
 
   const filtered = useMemo(() => {
@@ -81,39 +69,6 @@ export default function LibraryScreen() {
     setToast({ message, token: Date.now() });
   }
 
-  async function handleExport() {
-    if (fileBusy.current) {
-      return;
-    }
-    fileBusy.current = true;
-    try {
-      await exportNotes(notes);
-    } catch {
-      // Ignore cancel / share-sheet dismissal.
-    } finally {
-      fileBusy.current = false;
-    }
-  }
-
-  async function handleImport() {
-    if (fileBusy.current) {
-      return;
-    }
-    fileBusy.current = true;
-    try {
-      const imported = await importNotes();
-      if (imported) {
-        replaceNotes(imported);
-      }
-    } catch (error) {
-      if (!isCanceledError(error)) {
-        showToast(`Import failed: ${importFailureReason(error)}`);
-      }
-    } finally {
-      fileBusy.current = false;
-    }
-  }
-
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: colors.bg }}
@@ -122,8 +77,8 @@ export default function LibraryScreen() {
       <LibraryHeader
         query={query}
         onQueryChange={setQuery}
-        onExport={() => void handleExport()}
-        onImport={() => void handleImport()}
+        onOpenSettings={() => router.push("/settings")}
+        searchPlaceholder={t("search")}
       />
       <FlatList
         data={filtered}
@@ -146,7 +101,7 @@ export default function LibraryScreen() {
                   fontWeight: "700",
                 }}
               >
-                your memi is empty
+                {t("libraryEmptyTitle")}
               </Text>
               <Text
                 style={{
@@ -156,9 +111,7 @@ export default function LibraryScreen() {
                   marginTop: space.sm,
                 }}
               >
-                write a note you want to remember. memi turns it into cloze
-                flashcards — passages with the key words hidden — so you can
-                train by filling in the blanks.
+                {t("libraryEmptyBody")}
               </Text>
             </View>
           ) : (
@@ -170,7 +123,7 @@ export default function LibraryScreen() {
                 paddingHorizontal: space.lg,
               }}
             >
-              No matching notes
+              {t("noMatchingNotes")}
             </Text>
           )
         }
@@ -186,9 +139,11 @@ export default function LibraryScreen() {
             onPin={() => updateNote(item.id, { pinned: !item.pinned })}
             speaking={speakingId === item.id}
             onSpeak={() => {
-              void speakText(item.id, item.body, item.title).catch(() => {
-                showToast("Could not speak");
-              });
+              void speakText(item.id, item.body, item.title, voice).catch(
+                () => {
+                  showToast(t("speakFailed"));
+                },
+              );
             }}
             onDelete={() => {
               closeOpenRow();
@@ -215,13 +170,13 @@ export default function LibraryScreen() {
 function LibraryHeader({
   query,
   onQueryChange,
-  onExport,
-  onImport,
+  onOpenSettings,
+  searchPlaceholder,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
-  onExport: () => void;
-  onImport: () => void;
+  onOpenSettings: () => void;
+  searchPlaceholder: string;
 }) {
   const [searching, setSearching] = useState(false);
   const inputRef = useRef<RNTextInput>(null);
@@ -255,7 +210,7 @@ function LibraryHeader({
       [1, 0],
       Extrapolation.CLAMP,
     ),
-    width: interpolate(progress.value, [0, 1], [LEFT_CLUSTER_WIDTH, 0]),
+    width: interpolate(progress.value, [0, 1], [HEADER_ICON, 0]),
   }));
 
   const inputStyle = useAnimatedStyle(() => ({
@@ -298,20 +253,12 @@ function LibraryHeader({
         pointerEvents={searching ? "none" : "auto"}
         style={[{ overflow: "hidden", flexDirection: "row" }, leftStyle]}
       >
-        <View style={{ width: LEFT_CLUSTER_WIDTH, flexDirection: "row" }}>
-          <SquareIconButton
-            name="export"
-            size={HEADER_ICON}
-            iconSize={22}
-            onPress={onExport}
-          />
-          <SquareIconButton
-            name="import"
-            size={HEADER_ICON}
-            iconSize={22}
-            onPress={onImport}
-          />
-        </View>
+        <SquareIconButton
+          name="settings"
+          size={HEADER_ICON}
+          iconSize={22}
+          onPress={onOpenSettings}
+        />
       </Reanimated.View>
       <Reanimated.View
         pointerEvents={searching ? "auto" : "none"}
@@ -321,7 +268,7 @@ function LibraryHeader({
           ref={inputRef}
           value={query}
           onChangeText={onQueryChange}
-          placeholder="Search"
+          placeholder={searchPlaceholder}
           placeholderTextColor={colors.muted}
           underlineColorAndroid="transparent"
           editable={searching}

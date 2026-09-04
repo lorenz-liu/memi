@@ -8,6 +8,7 @@ import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text, TextInput } from "../../src/components/Text";
 import { speakText, useSpeakingId } from "../../src/lib/speak";
 import { useNotes } from "../../src/store/notes";
+import { useSettings } from "../../src/store/settings";
 import { colors, space } from "../../src/theme";
 
 export default function NoteScreen() {
@@ -20,6 +21,7 @@ export default function NoteScreen() {
     null,
   );
   const speakingId = useSpeakingId();
+  const { t, voice } = useSettings();
 
   if (!note) {
     return (
@@ -59,9 +61,14 @@ export default function NoteScreen() {
             name="speak"
             color={speakingId === note.id ? colors.ink : colors.muted}
             onPress={() => {
-              void speakText(note.id, note.body, note.title).catch(() => {
-                setToast({ message: "Could not speak", token: Date.now() });
-              });
+              void speakText(note.id, note.body, note.title, voice).catch(
+                () => {
+                  setToast({
+                    message: t("speakFailed"),
+                    token: Date.now(),
+                  });
+                },
+              );
             }}
           />
           <SquareIconButton

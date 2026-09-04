@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { NotesProvider } from "../src/store/notes";
+import { SettingsProvider } from "../src/store/settings";
 import { colors, fontAssets } from "../src/theme";
 
 SplashScreen.preventAutoHideAsync();
@@ -26,18 +27,21 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
-      <NotesProvider>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.bg },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="note/[id]" />
-        </Stack>
-      </NotesProvider>
+      <SettingsProvider>
+        <NotesProvider>
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.bg },
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="note/[id]" />
+            <Stack.Screen name="settings" />
+          </Stack>
+        </NotesProvider>
+      </SettingsProvider>
     </GestureHandlerRootView>
   );
 }

@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "memi",
+    "slug": "memi",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "memi",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSAllowsArbitraryLoads": true
+        }
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FAFAFA"
+      },
+      "usesCleartextTraffic": true
+    },
+    "plugins": ["expo-router", "expo-localization"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "splash": {
+      "backgroundColor": "#FAFAFA"
+    }
+  }
+}

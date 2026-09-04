@@ -7,7 +7,16 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+    "includes": [
+      "**",
+      "!node_modules",
+      "!.expo",
+      "!.next",
+      "!dist",
+      "!build",
+      "!android",
+      "!ios"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -20,7 +29,6 @@
       "recommended": true
     },
     "domains": {
-      "next": "recommended",
       "react": "recommended"
     }
   },

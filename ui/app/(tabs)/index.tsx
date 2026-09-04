@@ -81,12 +81,16 @@ export default function LibraryScreen() {
         data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
-          paddingHorizontal: space.lg,
           paddingBottom: space.xl,
         }}
         ListEmptyComponent={
           <Text
-            style={{ color: colors.muted, fontSize: 16, marginTop: space.xl }}
+            style={{
+              color: colors.muted,
+              fontSize: 16,
+              marginTop: space.xl,
+              paddingHorizontal: space.lg,
+            }}
           >
             No notes yet
           </Text>
@@ -150,9 +154,10 @@ function LibraryRow({
     ]).start(() => onHighlightEnd());
   }, [appear, flash, highlighted, onHighlightEnd]);
 
+  const restColor = note.pinned ? colors.fill : colors.bg;
   const backgroundColor = flash.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.bg, colors.highlight],
+    outputRange: [restColor, colors.highlight],
   });
 
   return (
@@ -177,6 +182,7 @@ function LibraryRow({
             minHeight: 64,
             flexDirection: "row",
             alignItems: "center",
+            paddingHorizontal: space.lg,
             opacity: pressed ? 0.45 : 1,
           })}
         >

@@ -2,7 +2,7 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
-  useMemo,
+  useRef,
   useState,
 } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -40,7 +40,16 @@ export default function TrainScreen() {
     {},
   );
   const [focusedIndex, setFocusedIndex] = useState<string | null>(null);
-  const [hintVisible, setHintVisible] = useState(false);
+  const [hintText, setHintText] = useState<string | null>(null);
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (hintTimer.current) {
+        clearTimeout(hintTimer.current);
+      }
+    };
+  }, []);
 
   const rebuildDeck = useCallback(
     (nextMode: Mode, keepNoteId?: string) => {
@@ -89,7 +98,7 @@ export default function TrainScreen() {
         }
       } catch {
         if (!cancelled) {
-          setError("无法生成闪卡");
+          setError("Could not generate flashcard");
         }
       } finally {
         if (!cancelled) {
@@ -107,7 +116,11 @@ export default function TrainScreen() {
     setAnswers({});
     setCheckStates({});
     setFocusedIndex(card?.blanks[0]?.index ?? null);
-    setHintVisible(false);
+    setHintText(null);
+    if (hintTimer.current) {
+      clearTimeout(hintTimer.current);
+      hintTimer.current = null;
+    }
   }, [card]);
 
   const go = useCallback(
@@ -123,14 +136,22 @@ export default function TrainScreen() {
     [deck.length],
   );
 
-  const hintText = useMemo(() => {
-    if (!card || !hintVisible) {
-      return null;
+  function revealHint() {
+    if (!card) {
+      return;
     }
     const blank =
       card.blanks.find((item) => item.index === focusedIndex) ?? card.blanks[0];
-    return blank?.hint || blank?.explanation || null;
-  }, [card, focusedIndex, hintVisible]);
+    const text = blank?.hint || blank?.explanation;
+    if (!text) {
+      return;
+    }
+    setHintText(text);
+    if (hintTimer.current) {
+      clearTimeout(hintTimer.current);
+    }
+    hintTimer.current = setTimeout(() => setHintText(null), 3000);
+  }
 
   if (notes.length === 0) {
     return (
@@ -139,7 +160,7 @@ export default function TrainScreen() {
         edges={["top"]}
       >
         <Text style={{ color: colors.muted, fontSize: 16 }}>
-          先去记一条，再来训练
+          Add a note first, then train
         </Text>
       </SafeAreaView>
     );
@@ -195,14 +216,12 @@ export default function TrainScreen() {
           ) : null}
           {card ? (
             <ClozePrompt
+              source={current?.body ?? ""}
               card={card}
               answers={answers}
               checkStates={checkStates}
               focusedIndex={focusedIndex}
-              onFocusBlank={(blankIndex) => {
-                setFocusedIndex(blankIndex);
-                setHintVisible(false);
-              }}
+              onFocusBlank={setFocusedIndex}
               onChangeAnswer={(blankIndex, value) => {
                 setAnswers((currentAnswers) => ({
                   ...currentAnswers,
@@ -220,7 +239,7 @@ export default function TrainScreen() {
 
       <View style={{ minHeight: 28, paddingHorizontal: space.lg }}>
         {hintText ? (
-          <Text style={{ color: colors.ink, fontSize: 16 }}>{hintText}</Text>
+          <Text style={{ color: colors.hint, fontSize: 16 }}>{hintText}</Text>
         ) : null}
       </View>
 
@@ -233,11 +252,7 @@ export default function TrainScreen() {
           alignItems: "center",
         }}
       >
-        <SquareIconButton
-          name="hint"
-          disabled={!card}
-          onPress={() => setHintVisible((value) => !value)}
-        />
+        <SquareIconButton name="hint" disabled={!card} onPress={revealHint} />
         <SquareIconButton
           name="check"
           disabled={!card}
@@ -245,7 +260,6 @@ export default function TrainScreen() {
             if (!card) {
               return;
             }
-            setHintVisible(false);
             setCheckStates(gradeAnswers(card, answers));
           }}
         />

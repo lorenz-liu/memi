@@ -8,11 +8,9 @@ import {
   Pressable,
   Text,
   TextInput,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Icon } from "../../src/icons/Icon";
 import { generateCardTitle } from "../../src/lib/api";
 import { fallbackTitle } from "../../src/lib/cloze";
 import { useNotes } from "../../src/store/notes";
@@ -45,7 +43,7 @@ export default function AddScreen() {
         title = result.title.trim();
       }
     } catch {
-      setError("标题生成失败，已使用摘录");
+      setError("Title generation failed; used a short excerpt");
     }
     addNote({ title, body });
     setText("");
@@ -68,7 +66,7 @@ export default function AddScreen() {
           multiline
           autoFocus
           textAlignVertical="top"
-          placeholder="记下来"
+          placeholder="Write something"
           placeholderTextColor={colors.muted}
           underlineColorAndroid="transparent"
           style={{
@@ -108,9 +106,16 @@ export default function AddScreen() {
           {saving ? (
             <ActivityIndicator color={colors.bg} />
           ) : (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Icon name="plus" size={28} color={colors.bg} />
-            </View>
+            <Text
+              style={{
+                color: colors.bg,
+                fontSize: 18,
+                letterSpacing: 1.4,
+                fontWeight: "600",
+              }}
+            >
+              ADD
+            </Text>
           )}
         </Pressable>
       </KeyboardAvoidingView>

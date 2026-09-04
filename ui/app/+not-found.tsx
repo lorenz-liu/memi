@@ -20,7 +20,7 @@ export default function NotFound() {
         onPress={() => router.replace("/(tabs)")}
       />
       <Text style={{ marginTop: space.md, color: colors.muted, fontSize: 16 }}>
-        不存在
+        Not found
       </Text>
     </View>
   );

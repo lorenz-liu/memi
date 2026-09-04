@@ -20,6 +20,7 @@ Your mission is to analyze user-provided text and transform it into exactly ONE 
    - Use standard Anki cloze syntax: {{c1::answer}}, {{c2::answer}}, {{c3::answer}}, ...
    - Number blanks sequentially (c1, c2, c3, ...) for as many targets as needed. Do not cap blanks per sentence.
    - Never mask the entire input. Keep enough visible context on the same card.
+   - Preserve the user's exact formatting: line breaks, indentation, and spacing must be identical in original_context and masked_text. Only wrap targets; never flatten onto one line.
 
 ## Output Format Specification:
 Respond with a single JSON object (the flashcard itself). Do NOT wrap it in a "cards" array.

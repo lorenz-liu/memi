@@ -2,6 +2,7 @@ export const colors = {
   bg: "#FAFAFA",
   ink: "#111111",
   muted: "#9A9A9A",
+  hint: "#555555",
   fill: "#EFEFEF",
   highlight: "#E6E6E6",
   correct: "#C8E6C9",

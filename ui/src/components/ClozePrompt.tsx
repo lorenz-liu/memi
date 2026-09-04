@@ -2,12 +2,17 @@ import { useEffect, useMemo, useRef } from "react";
 import { Animated, Text, TextInput, View } from "react-native";
 
 import type { ClozeCard } from "../lib/api";
-import { answersMatch, parseCloze } from "../lib/cloze";
+import {
+  answersMatch,
+  buildClozeSegments,
+  segmentsToLines,
+} from "../lib/cloze";
 import { colors } from "../theme";
 
 type CheckState = "idle" | "correct" | "wrong";
 
 export function ClozePrompt({
+  source,
   card,
   answers,
   onChangeAnswer,
@@ -15,6 +20,7 @@ export function ClozePrompt({
   onFocusBlank,
   checkStates,
 }: {
+  source: string;
   card: ClozeCard;
   answers: Record<string, string>;
   onChangeAnswer: (index: string, value: string) => void;
@@ -22,32 +28,50 @@ export function ClozePrompt({
   onFocusBlank: (index: string) => void;
   checkStates: Record<string, CheckState>;
 }) {
-  const segments = useMemo(() => parseCloze(card), [card]);
+  const lines = useMemo(
+    () => segmentsToLines(buildClozeSegments(source, card)),
+    [card, source],
+  );
   return (
-    <View
-      style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center" }}
-    >
-      {segments.map((segment) => {
-        if (segment.type === "text") {
-          return (
-            <Text
-              key={segment.key}
-              style={{ fontSize: 22, lineHeight: 36, color: colors.ink }}
-            >
-              {segment.value}
-            </Text>
-          );
-        }
+    <View>
+      {lines.map((line) => {
+        const lineKey = line.map((segment) => segment.key).join("|") || "empty";
         return (
-          <ClozeBlankInput
-            key={segment.key}
-            value={answers[segment.blank.index] ?? ""}
-            target={segment.blank.target}
-            focused={focusedIndex === segment.blank.index}
-            state={checkStates[segment.blank.index] ?? "idle"}
-            onChange={(value) => onChangeAnswer(segment.blank.index, value)}
-            onFocus={() => onFocusBlank(segment.blank.index)}
-          />
+          <View
+            key={lineKey}
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              alignItems: "center",
+              minHeight: 36,
+            }}
+          >
+            {line.map((segment) => {
+              if (segment.type === "text") {
+                return (
+                  <Text
+                    key={segment.key}
+                    style={{ fontSize: 22, lineHeight: 36, color: colors.ink }}
+                  >
+                    {segment.value}
+                  </Text>
+                );
+              }
+              return (
+                <ClozeBlankInput
+                  key={segment.key}
+                  value={answers[segment.blank.index] ?? ""}
+                  target={segment.blank.target}
+                  focused={focusedIndex === segment.blank.index}
+                  state={checkStates[segment.blank.index] ?? "idle"}
+                  onChange={(value) =>
+                    onChangeAnswer(segment.blank.index, value)
+                  }
+                  onFocus={() => onFocusBlank(segment.blank.index)}
+                />
+              );
+            })}
+          </View>
         );
       })}
     </View>
@@ -144,7 +168,6 @@ function ClozeBlankInput({
         marginVertical: 4,
         backgroundColor:
           focused && state === "idle" ? colors.highlight : colors.fill,
-        // Cloze check is the only place outline is used.
         borderWidth: state === "idle" ? 0 : 3,
         borderColor: state === "correct" ? colors.correct : colors.wrong,
       }}

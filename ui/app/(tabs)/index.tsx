@@ -51,7 +51,7 @@ export default function LibraryScreen() {
               autoFocus
               value={query}
               onChangeText={setQuery}
-              placeholder="搜索"
+              placeholder="Search"
               placeholderTextColor={colors.muted}
               underlineColorAndroid="transparent"
               style={{
@@ -94,7 +94,7 @@ export default function LibraryScreen() {
           <Text
             style={{ color: colors.muted, fontSize: 16, marginTop: space.xl }}
           >
-            还没有记录
+            No notes yet
           </Text>
         }
         renderItem={({ item }) => (

@@ -176,8 +176,26 @@ export default function TrainScreen() {
         style={{ flex: 1, backgroundColor: colors.bg, padding: space.lg }}
         edges={["top"]}
       >
-        <Text style={{ color: colors.muted, fontSize: 16 }}>
-          Add a note first, then train
+        <Text
+          style={{
+            color: colors.ink,
+            fontSize: 22,
+            fontWeight: "700",
+            marginTop: space.xl,
+          }}
+        >
+          memi has nothing to quiz you on
+        </Text>
+        <Text
+          style={{
+            color: colors.muted,
+            fontSize: 16,
+            lineHeight: 24,
+            marginTop: space.sm,
+          }}
+        >
+          based on your notes, memi uses ai to mask the key
+          words and turns them into cloze flashcards. come back here when you have at least one note taken. 
         </Text>
       </SafeAreaView>
     );

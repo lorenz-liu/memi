@@ -130,16 +130,47 @@ export default function LibraryScreen() {
           paddingBottom: space.xl,
         }}
         ListEmptyComponent={
-          <Text
-            style={{
-              color: colors.muted,
-              fontSize: 16,
-              marginTop: space.xl,
-              paddingHorizontal: space.lg,
-            }}
-          >
-            No notes yet
-          </Text>
+          notes.length === 0 ? (
+            <View
+              style={{
+                marginTop: space.xl,
+                paddingHorizontal: space.lg,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.ink,
+                  fontSize: 22,
+                  fontWeight: "700",
+                }}
+              >
+                your memi is empty
+              </Text>
+              <Text
+                style={{
+                  color: colors.muted,
+                  fontSize: 16,
+                  lineHeight: 24,
+                  marginTop: space.sm,
+                }}
+              >
+                write a note you want to remember. memi turns it into cloze
+                flashcards — passages with the key words hidden — so you can
+                train by filling in the blanks.
+              </Text>
+            </View>
+          ) : (
+            <Text
+              style={{
+                color: colors.muted,
+                fontSize: 16,
+                marginTop: space.xl,
+                paddingHorizontal: space.lg,
+              }}
+            >
+              No matching notes
+            </Text>
+          )
         }
         renderItem={({ item }) => (
           <LibraryRow

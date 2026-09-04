@@ -31,8 +31,8 @@
           "fonts": [
             "./assets/fonts/Thasadith-Regular.ttf",
             "./assets/fonts/Thasadith-Bold.ttf",
-            "./assets/fonts/Thasadith-Italic.ttf",
-            "./assets/fonts/Thasadith-BoldItalic.ttf"
+            "./assets/fonts/NotoSerifSC-Regular.ttf",
+            "./assets/fonts/NotoSerifSC-Bold.ttf"
           ]
         }
       ]

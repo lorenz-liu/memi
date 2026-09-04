@@ -1,18 +1,81 @@
+import { Children, type ReactNode } from "react";
 import {
+  Platform,
   Text as RNText,
   TextInput as RNTextInput,
   type TextInputProps,
   type TextProps,
 } from "react-native";
 
-import { fonts } from "../theme";
+import {
+  inputFontFamily,
+  resolveTypefaces,
+  splitFontRuns,
+  stackedFontFamily,
+} from "../lib/typeface";
 
-export function Text({ style, ...props }: TextProps) {
-  return <RNText {...props} style={[{ fontFamily: fonts.regular }, style]} />;
+export function Text({ style, children, ...props }: TextProps) {
+  const { latin, cjk } = resolveTypefaces(style);
+
+  if (Platform.OS === "web") {
+    return (
+      <RNText
+        {...props}
+        style={[style, { fontFamily: stackedFontFamily(latin, cjk) }]}
+      >
+        {children}
+      </RNText>
+    );
+  }
+
+  return (
+    <RNText {...props} style={[style, { fontFamily: latin }]}>
+      {renderMixedChildren(children, latin, cjk)}
+    </RNText>
+  );
 }
 
-export function TextInput({ style, ...props }: TextInputProps) {
+export function TextInput({
+  style,
+  value,
+  defaultValue,
+  ...props
+}: TextInputProps) {
+  const text = String(value ?? defaultValue ?? "");
   return (
-    <RNTextInput {...props} style={[{ fontFamily: fonts.regular }, style]} />
+    <RNTextInput
+      {...props}
+      value={value}
+      defaultValue={defaultValue}
+      style={[style, { fontFamily: inputFontFamily(style, text) }]}
+    />
   );
+}
+
+function renderMixedChildren(
+  children: ReactNode,
+  latin: string,
+  cjk: string,
+): ReactNode {
+  return Children.map(children, (child) => {
+    if (typeof child === "string" || typeof child === "number") {
+      return renderRuns(String(child), latin, cjk);
+    }
+    return child;
+  });
+}
+
+function renderRuns(text: string, latin: string, cjk: string): ReactNode {
+  const runs = splitFontRuns(text);
+  if (runs.length === 1 && runs[0].script === "latin") {
+    return text;
+  }
+  return runs.map((run) => (
+    <RNText
+      key={`${run.start}:${run.script}`}
+      style={{ fontFamily: run.script === "cjk" ? cjk : latin }}
+    >
+      {run.text}
+    </RNText>
+  ));
 }

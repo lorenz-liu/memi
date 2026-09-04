@@ -12,15 +12,15 @@ export const colors = {
 export const fonts = {
   regular: "Thasadith-Regular",
   bold: "Thasadith-Bold",
-  italic: "Thasadith-Italic",
-  boldItalic: "Thasadith-BoldItalic",
+  cjk: "NotoSerifSC-Regular",
+  cjkBold: "NotoSerifSC-Bold",
 } as const;
 
 export const fontAssets = {
   [fonts.regular]: require("../assets/fonts/Thasadith-Regular.ttf"),
   [fonts.bold]: require("../assets/fonts/Thasadith-Bold.ttf"),
-  [fonts.italic]: require("../assets/fonts/Thasadith-Italic.ttf"),
-  [fonts.boldItalic]: require("../assets/fonts/Thasadith-BoldItalic.ttf"),
+  [fonts.cjk]: require("../assets/fonts/NotoSerifSC-Regular.ttf"),
+  [fonts.cjkBold]: require("../assets/fonts/NotoSerifSC-Bold.ttf"),
 };
 
 export const space = {

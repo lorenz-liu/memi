@@ -3,8 +3,10 @@ import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { BottomToast } from "../../src/components/BottomToast";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text, TextInput } from "../../src/components/Text";
+import { speakText, useSpeakingId } from "../../src/lib/speak";
 import { useNotes } from "../../src/store/notes";
 import { colors, space } from "../../src/theme";
 
@@ -14,6 +16,10 @@ export default function NoteScreen() {
   const { notes, updateNote } = useNotes();
   const note = useMemo(() => notes.find((item) => item.id === id), [id, notes]);
   const [editing, setEditing] = useState(false);
+  const [toast, setToast] = useState<{ message: string; token: number } | null>(
+    null,
+  );
+  const speakingId = useSpeakingId();
 
   if (!note) {
     return (
@@ -51,8 +57,12 @@ export default function NoteScreen() {
           />
           <SquareIconButton
             name="speak"
-            color={colors.muted}
-            onPress={() => undefined}
+            color={speakingId === note.id ? colors.ink : colors.muted}
+            onPress={() => {
+              void speakText(note.id, note.body, note.title).catch(() => {
+                setToast({ message: "Could not speak", token: Date.now() });
+              });
+            }}
           />
           <SquareIconButton
             name="edit"
@@ -118,6 +128,10 @@ export default function NoteScreen() {
           </Text>
         )}
       </KeyboardAvoidingView>
+      <BottomToast
+        key={toast?.token ?? "idle"}
+        message={toast?.message ?? null}
+      />
     </SafeAreaView>
   );
 }

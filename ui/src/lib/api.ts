@@ -18,6 +18,14 @@ export type TitleCard = {
   language: string;
 };
 
+export function ttsUrl(text: string, voice?: string): string {
+  const params = new URLSearchParams({ text });
+  if (voice) {
+    params.set("voice", voice);
+  }
+  return `${defaultBaseUrl()}/tts?${params.toString()}`;
+}
+
 function defaultBaseUrl(): string {
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");

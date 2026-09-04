@@ -26,6 +26,18 @@ class FakeLLM:
         return dict(self.payload)
 
 
+class FakeTTS:
+    def __init__(self, payload: bytes | Exception) -> None:
+        self.payload = payload
+        self.calls: list[dict[str, str]] = []
+
+    async def synthesize(self, text: str, voice: str) -> bytes:
+        self.calls.append({"text": text, "voice": voice})
+        if isinstance(self.payload, Exception):
+            raise self.payload
+        return self.payload
+
+
 VALID_CLOZE_CARD = {
     "original_context": "Hier soir, nous sommes allés au cinéma.",
     "masked_text": "Hier soir, nous {{c1::sommes allés}} au cinéma.",

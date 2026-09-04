@@ -30,6 +30,7 @@ import {
   importNotes,
   isCanceledError,
 } from "../../src/lib/backupFiles";
+import { speakText, useSpeakingId } from "../../src/lib/speak";
 import { type Note, useNotes } from "../../src/store/notes";
 import { colors, space } from "../../src/theme";
 
@@ -57,6 +58,7 @@ export default function LibraryScreen() {
   );
   const openRowClose = useRef<(() => void) | null>(null);
   const fileBusy = useRef(false);
+  const speakingId = useSpeakingId();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -182,7 +184,12 @@ export default function LibraryScreen() {
               router.push(`/note/${item.id}`);
             }}
             onPin={() => updateNote(item.id, { pinned: !item.pinned })}
-            onSpeak={() => undefined}
+            speaking={speakingId === item.id}
+            onSpeak={() => {
+              void speakText(item.id, item.body, item.title).catch(() => {
+                showToast("Could not speak");
+              });
+            }}
             onDelete={() => {
               closeOpenRow();
               deleteNote(item.id);
@@ -356,6 +363,7 @@ function LibraryHeader({
 function LibraryRow({
   note,
   highlighted,
+  speaking,
   onOpen,
   onPin,
   onSpeak,
@@ -365,6 +373,7 @@ function LibraryRow({
 }: {
   note: Note;
   highlighted: boolean;
+  speaking: boolean;
   onOpen: () => void;
   onPin: () => void;
   onSpeak: () => void;
@@ -479,7 +488,7 @@ function LibraryRow({
               name="speak"
               size={44}
               iconSize={20}
-              color={colors.muted}
+              color={speaking ? colors.ink : colors.muted}
               onPress={onSpeak}
             />
           </Pressable>

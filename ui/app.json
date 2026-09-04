@@ -31,10 +31,13 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/NotoSerifSC-VariableFont_wght.ttf"]
+          "fonts": [
+            "./assets/fonts/NotoSerifSC-VariableFont_wght.ttf"
+          ]
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

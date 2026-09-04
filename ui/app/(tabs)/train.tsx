@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -43,6 +44,9 @@ export default function TrainScreen() {
   const [focusedIndex, setFocusedIndex] = useState<string | null>(null);
   const [hintText, setHintText] = useState<string | null>(null);
   const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hintGeneration = useRef(0);
+  const hintOpacity = useSharedValue(0);
+  const hintStyle = useAnimatedStyle(() => ({ opacity: hintOpacity.value }));
 
   useEffect(() => {
     return () => {
@@ -117,6 +121,8 @@ export default function TrainScreen() {
     setAnswers({});
     setCheckStates({});
     setFocusedIndex(card?.blanks[0]?.index ?? null);
+    hintGeneration.current += 1;
+    hintOpacity.value = 0;
     setHintText(null);
     if (hintTimer.current) {
       clearTimeout(hintTimer.current);
@@ -147,11 +153,21 @@ export default function TrainScreen() {
     if (!text) {
       return;
     }
+    const generation = hintGeneration.current + 1;
+    hintGeneration.current = generation;
     setHintText(text);
+    hintOpacity.value = 0;
+    hintOpacity.value = withTiming(1, { duration: 280 });
     if (hintTimer.current) {
       clearTimeout(hintTimer.current);
     }
-    hintTimer.current = setTimeout(() => setHintText(null), 3000);
+    hintTimer.current = setTimeout(() => {
+      hintOpacity.value = withTiming(0, { duration: 280 }, (finished) => {
+        if (finished && hintGeneration.current === generation) {
+          runOnJS(setHintText)(null);
+        }
+      });
+    }, 3000);
   }
 
   if (notes.length === 0) {
@@ -239,11 +255,16 @@ export default function TrainScreen() {
         </View>
       </SwipePager>
 
-      <View style={{ minHeight: 28, paddingHorizontal: space.lg }}>
-        {hintText ? (
-          <Text style={{ color: colors.hint, fontSize: 16 }}>{hintText}</Text>
-        ) : null}
-      </View>
+      <Animated.View
+        style={[
+          { minHeight: 28, paddingHorizontal: space.lg },
+          hintStyle,
+        ]}
+      >
+        <Text style={{ color: colors.hint, fontSize: 16 }}>
+          {hintText ?? " "}
+        </Text>
+      </Animated.View>
 
       <View
         style={{

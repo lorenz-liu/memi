@@ -4,7 +4,10 @@ export type ClozeSegment =
   | { type: "text"; key: string; value: string }
   | { type: "blank"; key: string; blank: ClozeBlank };
 
-export type ClozeLine = ClozeSegment[];
+export type ClozeLine = {
+  key: string;
+  items: ClozeSegment[];
+};
 
 const CLOZE_RE = /\{\{c(\d+)::(.*?)}}/g;
 
@@ -31,7 +34,11 @@ export function applyClozeToOriginal(
         value: source.slice(cursor, found),
       });
     }
-    segments.push({ type: "blank", key: blank.index, blank });
+    segments.push({
+      type: "blank",
+      key: `blank-${found}-${blank.index}`,
+      blank,
+    });
     cursor = found + target.length;
   }
   if (cursor < source.length) {
@@ -62,7 +69,7 @@ export function parseCloze(card: ClozeCard): ClozeSegment[] {
     const target = match[2] ?? "";
     segments.push({
       type: "blank",
-      key: index,
+      key: `blank-${start}-${index}`,
       blank: byIndex.get(index) ?? {
         index,
         target,
@@ -94,19 +101,21 @@ export function buildClozeSegments(
 }
 
 export function segmentsToLines(segments: ClozeSegment[]): ClozeLine[] {
-  const lines: ClozeLine[] = [[]];
+  let lineId = 0;
+  const lines: ClozeLine[] = [{ key: `line-${lineId}`, items: [] }];
   for (const segment of segments) {
     if (segment.type === "blank") {
-      lines[lines.length - 1]?.push(segment);
+      lines[lines.length - 1]?.items.push(segment);
       continue;
     }
     const parts = segment.value.split("\n");
     parts.forEach((part, index) => {
       if (index > 0) {
-        lines.push([]);
+        lineId += 1;
+        lines.push({ key: `line-${lineId}`, items: [] });
       }
       if (part.length > 0) {
-        lines[lines.length - 1]?.push({
+        lines[lines.length - 1]?.items.push({
           type: "text",
           key: `${segment.key}-${index}`,
           value: part,

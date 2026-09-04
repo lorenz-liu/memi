@@ -34,46 +34,41 @@ export function ClozePrompt({
   );
   return (
     <View>
-      {lines.map((line) => {
-        const lineKey = line.map((segment) => segment.key).join("|") || "empty";
-        return (
-          <View
-            key={lineKey}
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              alignItems: "center",
-              minHeight: 36,
-            }}
-          >
-            {line.map((segment) => {
-              if (segment.type === "text") {
-                return (
-                  <Text
-                    key={segment.key}
-                    style={{ fontSize: 22, lineHeight: 36, color: colors.ink }}
-                  >
-                    {segment.value}
-                  </Text>
-                );
-              }
+      {lines.map((line) => (
+        <View
+          key={line.key}
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            alignItems: "center",
+            minHeight: 36,
+          }}
+        >
+          {line.items.map((segment) => {
+            if (segment.type === "text") {
               return (
-                <ClozeBlankInput
-                  key={segment.key}
-                  value={answers[segment.blank.index] ?? ""}
-                  target={segment.blank.target}
-                  focused={focusedIndex === segment.blank.index}
-                  state={checkStates[segment.blank.index] ?? "idle"}
-                  onChange={(value) =>
-                    onChangeAnswer(segment.blank.index, value)
-                  }
-                  onFocus={() => onFocusBlank(segment.blank.index)}
-                />
+                <Text
+                  key={`${line.key}-${segment.key}`}
+                  style={{ fontSize: 22, lineHeight: 36, color: colors.ink }}
+                >
+                  {segment.value}
+                </Text>
               );
-            })}
-          </View>
-        );
-      })}
+            }
+            return (
+              <ClozeBlankInput
+                key={`${line.key}-${segment.key}`}
+                value={answers[segment.blank.index] ?? ""}
+                target={segment.blank.target}
+                focused={focusedIndex === segment.blank.index}
+                state={checkStates[segment.blank.index] ?? "idle"}
+                onChange={(value) => onChangeAnswer(segment.blank.index, value)}
+                onFocus={() => onFocusBlank(segment.blank.index)}
+              />
+            );
+          })}
+        </View>
+      ))}
     </View>
   );
 }

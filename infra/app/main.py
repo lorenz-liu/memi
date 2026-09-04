@@ -14,6 +14,11 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(router)
+
+    @app.get("/")
+    def health() -> dict[str, bool]:
+        return {"ok": True}
+
     return app
 
 

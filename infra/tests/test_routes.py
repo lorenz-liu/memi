@@ -41,3 +41,9 @@ def test_generate_card_title_rejects_bad_language(client: TestClient) -> None:
         json={"text": "bonjour", "language": "zh-CN"},
     )
     assert response.status_code == 422
+
+
+def test_health(client: TestClient) -> None:
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}

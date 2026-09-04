@@ -13,12 +13,14 @@ class FakeLLM:
         *,
         max_completion_tokens: int = 2048,
         temperature: float = 1,
+        reasoning_effort: str = "medium",
     ) -> dict[str, Any]:
         self.calls.append(
             {
                 "messages": messages,
                 "max_completion_tokens": max_completion_tokens,
                 "temperature": temperature,
+                "reasoning_effort": reasoning_effort,
             }
         )
         if isinstance(self.payload, Exception):

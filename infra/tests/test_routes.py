@@ -37,6 +37,18 @@ def test_generate_card_title_ok(client: TestClient, fake_llm: FakeLLM) -> None:
     assert response.json() == {"title": "être present", "language": "en"}
 
 
+def test_generate_card_title_maps_llm_error(
+    client: TestClient, fake_llm: FakeLLM
+) -> None:
+    fake_llm.payload = LLMError("Model request failed")
+    response = client.post(
+        "/generate_card_title",
+        json={"text": "bonjour", "language": "en"},
+    )
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Model request failed"
+
+
 def test_generate_card_title_rejects_bad_language(client: TestClient) -> None:
     response = client.post(
         "/generate_card_title",

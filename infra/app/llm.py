@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from dotenv import load_dotenv
-from groq import Groq
+from groq import APIError, Groq
 
 from app.config import DEFAULT_MODEL
 
@@ -22,6 +22,7 @@ class LLMClient(Protocol):
         *,
         max_completion_tokens: int = 2048,
         temperature: float = 1,
+        reasoning_effort: str = "medium",
     ) -> dict[str, Any]: ...
 
 
@@ -52,18 +53,22 @@ class GroqLLMClient:
         *,
         max_completion_tokens: int = 2048,
         temperature: float = 1,
+        reasoning_effort: str = "medium",
     ) -> dict[str, Any]:
-        completion = self._client.chat.completions.create(
-            model=self._model,
-            messages=messages,
-            temperature=temperature,
-            max_completion_tokens=max_completion_tokens,
-            top_p=1,
-            reasoning_effort="medium",
-            response_format={"type": "json_object"},
-            stream=False,
-            stop=None,
-        )
+        try:
+            completion = self._client.chat.completions.create(
+                model=self._model,
+                messages=messages,
+                temperature=temperature,
+                max_completion_tokens=max_completion_tokens,
+                top_p=1,
+                reasoning_effort=reasoning_effort,
+                response_format={"type": "json_object"},
+                stream=False,
+                stop=None,
+            )
+        except APIError as exc:
+            raise LLMError("Model request failed") from exc
         raw_output = completion.choices[0].message.content
         if not raw_output:
             raise LLMError("Model returned an empty response")

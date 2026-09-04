@@ -10,6 +10,8 @@ def test_generate_card_title_uses_language_code() -> None:
     assert card.language == "zh"
     user_message = llm.calls[0]["messages"][-1]["content"]
     assert "ISO 639 language code: zh" in user_message
+    assert llm.calls[0]["max_completion_tokens"] == 1024
+    assert llm.calls[0]["reasoning_effort"] == "low"
 
 
 def test_generate_card_title_rejects_missing_title() -> None:

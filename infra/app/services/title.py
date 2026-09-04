@@ -10,8 +10,9 @@ from app.schemas import TitleCard
 def generate_card_title(text: str, language: str, llm: LLMClient) -> TitleCard:
     payload = llm.complete_json(
         build_messages(text, language),
-        max_completion_tokens=256,
+        max_completion_tokens=1024,
         temperature=0.4,
+        reasoning_effort="low",
     )
     title = payload.get("title")
     if not isinstance(title, str) or not title.strip():

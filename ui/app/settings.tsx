@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { Linking, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomToast } from "../src/components/BottomToast";
@@ -20,7 +20,10 @@ import { useNotes } from "../src/store/notes";
 import { type CardOrder, TTS_VOICES, useSettings } from "../src/store/settings";
 import { colors, space } from "../src/theme";
 
-type Pane = "home" | "language" | "voice" | "order";
+type Pane = "home" | "language" | "voice" | "order" | "about";
+
+const COFFEE_URL = "https://buymeacoffee.com/lorenzliu";
+const COPYRIGHT_YEAR = 2026;
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -167,6 +170,12 @@ export default function SettingsScreen() {
               detail={t("settingsImportDetail")}
               onPress={() => void handleImport()}
             />
+            <SettingsRow
+              icon="about"
+              title={t("settingsAbout")}
+              detail={t("settingsAboutDetail")}
+              onPress={() => setPane("about")}
+            />
           </>
         ) : null}
         {pane === "language"
@@ -213,7 +222,21 @@ export default function SettingsScreen() {
               />
             ))
           : null}
+        {pane === "about" ? <AboutBody /> : null}
       </ScrollView>
+      {pane === "home" ? (
+        <Text
+          style={{
+            color: colors.muted,
+            fontSize: 12,
+            textAlign: "center",
+            paddingHorizontal: space.lg,
+            paddingBottom: space.md,
+          }}
+        >
+          {t("settingsCopyright")}
+        </Text>
+      ) : null}
       <BottomToast
         key={toast?.token ?? "idle"}
         message={toast?.message ?? null}
@@ -253,6 +276,68 @@ function SettingsRow({
         </Text>
       </View>
     </Pressable>
+  );
+}
+
+function AboutBody() {
+  return (
+    <View style={{ paddingHorizontal: space.lg, paddingTop: space.sm }}>
+      <AboutBlock>
+        {`Copyright © ${COPYRIGHT_YEAR} Lorenz Liu. All rights reserved.`}
+      </AboutBlock>
+      <AboutBlock>
+        {
+          "本应用由 Lorenz Liu 开发与维护。\nDeveloped and maintained by Lorenz Liu."
+        }
+      </AboutBlock>
+      <AboutBlock>
+        {
+          "版权声明 / Legal Notice:\n未经开发者书面许可，严禁将本软件用于任何形式的商业分发、转发或二次销售。\nUnauthorized commercial distribution, modification, or redistribution without prior written consent is strictly prohibited."
+        }
+      </AboutBlock>
+      <AboutBlock>
+        {
+          "隐私保护 / Privacy:\n本应用不收集、不存储任何个人信息。\nThis app does not collect or track any personal information."
+        }
+      </AboutBlock>
+      <AboutBlock>{"支持开发者 / Support:\nBuy me a coffee:"}</AboutBlock>
+      <Pressable
+        accessibilityRole="link"
+        onPress={() => {
+          void Linking.openURL(COFFEE_URL);
+        }}
+        style={({ pressed }) => ({
+          opacity: pressed ? 0.45 : 1,
+          paddingVertical: 4,
+        })}
+      >
+        <Text
+          style={{
+            fontSize: 16,
+            lineHeight: 24,
+            color: colors.ink,
+            textDecorationLine: "underline",
+          }}
+        >
+          {COFFEE_URL}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function AboutBlock({ children }: { children: string }) {
+  return (
+    <Text
+      style={{
+        fontSize: 16,
+        lineHeight: 24,
+        color: colors.ink,
+        marginBottom: space.md,
+      }}
+    >
+      {children}
+    </Text>
   );
 }
 

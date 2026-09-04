@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 from typing import Any, Protocol
 
+from dotenv import load_dotenv
 from groq import Groq
 
 from app.config import DEFAULT_MODEL
@@ -23,6 +25,12 @@ class LLMClient(Protocol):
     ) -> dict[str, Any]: ...
 
 
+def _load_env_files() -> None:
+    infra_dir = Path(__file__).resolve().parents[1]
+    load_dotenv(infra_dir / ".env")
+    load_dotenv(infra_dir.parent / ".env")
+
+
 class GroqLLMClient:
     def __init__(self, client: Groq, model: str = DEFAULT_MODEL) -> None:
         self._client = client
@@ -30,9 +38,12 @@ class GroqLLMClient:
 
     @classmethod
     def from_env(cls) -> GroqLLMClient:
+        _load_env_files()
         api_key = os.environ.get("GROQ_API_KEY", "").strip().strip("\"'“”")
         if not api_key:
-            raise LLMError('GROQ_API_KEY is missing. Run: export GROQ_API_KEY="gsk_..."')
+            raise LLMError(
+                'GROQ_API_KEY is missing. Put it in infra/.env or export GROQ_API_KEY="gsk_..."'
+            )
         return cls(Groq(api_key=api_key))
 
     def complete_json(

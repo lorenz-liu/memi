@@ -5,13 +5,14 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   Text,
   TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { SquareIconButton } from "../../src/components/SquareIconButton";
+import { Icon } from "../../src/icons/Icon";
 import { generateCardTitle } from "../../src/lib/api";
 import { fallbackTitle } from "../../src/lib/cloze";
 import { useNotes } from "../../src/store/notes";
@@ -28,6 +29,7 @@ export default function AddScreen() {
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const canSave = text.trim().length > 0 && !saving;
 
   async function submit() {
     const body = text.trim();
@@ -60,29 +62,6 @@ export default function AddScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View
-          style={{
-            height: 56,
-            paddingHorizontal: space.sm,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
-          {saving ? (
-            <ActivityIndicator
-              color={colors.ink}
-              style={{ marginRight: space.md }}
-            />
-          ) : (
-            <SquareIconButton
-              name="plus"
-              inverted
-              disabled={!text.trim()}
-              onPress={() => void submit()}
-            />
-          )}
-        </View>
         <TextInput
           value={text}
           onChangeText={setText}
@@ -95,7 +74,8 @@ export default function AddScreen() {
           style={{
             flex: 1,
             paddingHorizontal: space.lg,
-            paddingBottom: space.lg,
+            paddingTop: space.lg,
+            paddingBottom: space.md,
             fontSize: 22,
             lineHeight: 32,
             color: colors.ink,
@@ -106,12 +86,33 @@ export default function AddScreen() {
             style={{
               color: colors.muted,
               paddingHorizontal: space.lg,
-              paddingBottom: space.md,
+              paddingBottom: space.sm,
             }}
           >
             {error}
           </Text>
         ) : null}
+        <Pressable
+          accessibilityRole="button"
+          disabled={!canSave}
+          onPress={() => void submit()}
+          style={({ pressed }) => ({
+            minHeight: 64,
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.ink,
+            opacity: !canSave ? 0.28 : pressed ? 0.7 : 1,
+          })}
+        >
+          {saving ? (
+            <ActivityIndicator color={colors.bg} />
+          ) : (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Icon name="plus" size={28} color={colors.bg} />
+            </View>
+          )}
+        </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

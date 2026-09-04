@@ -35,6 +35,23 @@ trap cleanup EXIT INT TERM
 free_port 8000
 free_port 8081
 
+if [[ -f "$ROOT/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env"
+  set +a
+fi
+if [[ -f "$ROOT/infra/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/infra/.env"
+  set +a
+fi
+
+if [[ -z "${GROQ_API_KEY:-}" ]]; then
+  echo "Warning: GROQ_API_KEY is not set. Add it to infra/.env (see infra/.env.example)."
+fi
+
 (cd "$ROOT/infra" && uv run python main.py) &
 API_PID="$!"
 

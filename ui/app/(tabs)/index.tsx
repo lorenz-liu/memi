@@ -137,24 +137,22 @@ function LibraryRow({
     if (!highlighted) {
       return;
     }
-    Animated.parallel([
-      Animated.timing(appear, {
+    Animated.timing(appear, {
+      toValue: 1,
+      duration: 420,
+      useNativeDriver: true,
+    }).start();
+    Animated.sequence([
+      Animated.timing(flash, {
         toValue: 1,
-        duration: 420,
-        useNativeDriver: true,
+        duration: 160,
+        useNativeDriver: false,
       }),
-      Animated.sequence([
-        Animated.timing(flash, {
-          toValue: 1,
-          duration: 160,
-          useNativeDriver: false,
-        }),
-        Animated.timing(flash, {
-          toValue: 0,
-          duration: 700,
-          useNativeDriver: false,
-        }),
-      ]),
+      Animated.timing(flash, {
+        toValue: 0,
+        duration: 700,
+        useNativeDriver: false,
+      }),
     ]).start(() => onHighlightEnd());
   }, [appear, flash, highlighted, onHighlightEnd]);
 
@@ -175,45 +173,46 @@ function LibraryRow({
             }),
           },
         ],
-        backgroundColor,
         marginBottom: 4,
       }}
     >
-      <Pressable
-        onPress={onOpen}
-        style={({ pressed }) => ({
-          minHeight: 64,
-          flexDirection: "row",
-          alignItems: "center",
-          opacity: pressed ? 0.45 : 1,
-        })}
-      >
-        <Text
-          numberOfLines={1}
-          style={{
-            flex: 1,
-            fontSize: 20,
-            color: colors.ink,
-            paddingVertical: space.md,
-          }}
+      <Animated.View style={{ backgroundColor }}>
+        <Pressable
+          onPress={onOpen}
+          style={({ pressed }) => ({
+            minHeight: 64,
+            flexDirection: "row",
+            alignItems: "center",
+            opacity: pressed ? 0.45 : 1,
+          })}
         >
-          {note.title}
-        </Text>
-        <SquareIconButton
-          name="pin"
-          size={44}
-          iconSize={20}
-          color={note.pinned ? colors.ink : colors.muted}
-          onPress={onPin}
-        />
-        <SquareIconButton
-          name="speak"
-          size={44}
-          iconSize={20}
-          color={colors.muted}
-          onPress={onSpeak}
-        />
-      </Pressable>
+          <Text
+            numberOfLines={1}
+            style={{
+              flex: 1,
+              fontSize: 20,
+              color: colors.ink,
+              paddingVertical: space.md,
+            }}
+          >
+            {note.title}
+          </Text>
+          <SquareIconButton
+            name="pin"
+            size={44}
+            iconSize={20}
+            color={note.pinned ? colors.ink : colors.muted}
+            onPress={onPin}
+          />
+          <SquareIconButton
+            name="speak"
+            size={44}
+            iconSize={20}
+            color={colors.muted}
+            onPress={onSpeak}
+          />
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 }

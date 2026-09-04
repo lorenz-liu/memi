@@ -8,10 +8,11 @@ import {
 import { ActivityIndicator, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  Extrapolation,
+  interpolate,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -290,6 +291,9 @@ export default function TrainScreen() {
   );
 }
 
+const SWIPE_FADE = { duration: 160 };
+const SWIPE_OFFSET = 36;
+
 function SwipePager({
   children,
   onPrev,
@@ -304,23 +308,66 @@ function SwipePager({
   canNext: boolean;
 }) {
   const translateX = useSharedValue(0);
+  const opacity = useSharedValue(1);
+  const locked = useSharedValue(false);
+
+  function enterFrom(direction: number) {
+    if (direction < 0) {
+      onNext();
+    } else {
+      onPrev();
+    }
+    translateX.value = -direction * SWIPE_OFFSET;
+    opacity.value = 0;
+    translateX.value = withTiming(0, SWIPE_FADE);
+    opacity.value = withTiming(1, SWIPE_FADE, (finished) => {
+      if (finished) {
+        locked.value = false;
+      }
+    });
+  }
+
   const gesture = Gesture.Pan()
     .activeOffsetX([-24, 24])
     .failOffsetY([-16, 16])
     .onUpdate((event) => {
+      if (locked.value) {
+        return;
+      }
       translateX.value = event.translationX;
+      opacity.value = interpolate(
+        Math.abs(event.translationX),
+        [0, 140],
+        [1, 0.35],
+        Extrapolation.CLAMP,
+      );
     })
     .onEnd((event) => {
-      if (event.translationX < -72 && canNext) {
-        runOnJS(onNext)();
-      } else if (event.translationX > 72 && canPrev) {
-        runOnJS(onPrev)();
+      if (locked.value) {
+        return;
       }
-      translateX.value = withSpring(0, { damping: 18, stiffness: 180 });
+      const goNext = event.translationX < -72 && canNext;
+      const goPrev = event.translationX > 72 && canPrev;
+      if (!goNext && !goPrev) {
+        translateX.value = withTiming(0, SWIPE_FADE);
+        opacity.value = withTiming(1, SWIPE_FADE);
+        return;
+      }
+      locked.value = true;
+      const direction = goNext ? -1 : 1;
+      translateX.value = withTiming(direction * SWIPE_OFFSET, SWIPE_FADE);
+      opacity.value = withTiming(0, SWIPE_FADE, (finished) => {
+        if (finished) {
+          runOnJS(enterFrom)(direction);
+        } else {
+          locked.value = false;
+        }
+      });
     });
 
   const style = useAnimatedStyle(() => ({
     flex: 1,
+    opacity: opacity.value,
     transform: [{ translateX: translateX.value }],
   }));
 

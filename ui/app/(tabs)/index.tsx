@@ -5,10 +5,16 @@ import Swipeable, {
   type SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { BottomToast } from "../../src/components/BottomToast";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text, TextInput } from "../../src/components/Text";
 import { Icon } from "../../src/icons/Icon";
+import {
+  exportNotes,
+  importFailureReason,
+  importNotes,
+  isCanceledError,
+} from "../../src/lib/backupFiles";
 import { type Note, useNotes } from "../../src/store/notes";
 import { colors, fonts, space } from "../../src/theme";
 
@@ -16,11 +22,21 @@ const DELETE_WIDTH = 72;
 
 export default function LibraryScreen() {
   const router = useRouter();
-  const { notes, highlightId, clearHighlight, updateNote, deleteNote } =
-    useNotes();
+  const {
+    notes,
+    highlightId,
+    clearHighlight,
+    updateNote,
+    deleteNote,
+    replaceNotes,
+  } = useNotes();
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
+  const [toast, setToast] = useState<{ message: string; token: number } | null>(
+    null,
+  );
   const openRowClose = useRef<(() => void) | null>(null);
+  const fileBusy = useRef(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -37,6 +53,43 @@ export default function LibraryScreen() {
   function closeOpenRow() {
     openRowClose.current?.();
     openRowClose.current = null;
+  }
+
+  function showToast(message: string) {
+    setToast({ message, token: Date.now() });
+  }
+
+  async function handleExport() {
+    if (fileBusy.current) {
+      return;
+    }
+    fileBusy.current = true;
+    try {
+      await exportNotes(notes);
+    } catch {
+      // Ignore cancel / share-sheet dismissal.
+    } finally {
+      fileBusy.current = false;
+    }
+  }
+
+  async function handleImport() {
+    if (fileBusy.current) {
+      return;
+    }
+    fileBusy.current = true;
+    try {
+      const imported = await importNotes();
+      if (imported) {
+        replaceNotes(imported);
+      }
+    } catch (error) {
+      if (!isCanceledError(error)) {
+        showToast(`Import failed: ${importFailureReason(error)}`);
+      }
+    } finally {
+      fileBusy.current = false;
+    }
   }
 
   return (
@@ -80,6 +133,20 @@ export default function LibraryScreen() {
           </>
         ) : (
           <>
+            <SquareIconButton
+              name="export"
+              size={44}
+              iconSize={22}
+              style={{ backgroundColor: colors.white }}
+              onPress={() => void handleExport()}
+            />
+            <SquareIconButton
+              name="import"
+              size={44}
+              iconSize={22}
+              style={{ backgroundColor: colors.white }}
+              onPress={() => void handleImport()}
+            />
             <View style={{ flex: 1 }} />
             <SquareIconButton
               name="search"
@@ -132,6 +199,10 @@ export default function LibraryScreen() {
             onHighlightEnd={clearHighlight}
           />
         )}
+      />
+      <BottomToast
+        key={toast?.token ?? "idle"}
+        message={toast?.message ?? null}
       />
     </SafeAreaView>
   );

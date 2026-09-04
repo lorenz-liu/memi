@@ -35,7 +35,8 @@
             "./assets/fonts/NotoSerifSC-Bold.ttf"
           ]
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true

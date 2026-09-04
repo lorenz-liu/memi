@@ -32,6 +32,7 @@ type NotesContextValue = {
     patch: Partial<Pick<Note, "title" | "body" | "pinned">>,
   ) => void;
   deleteNote: (id: string) => void;
+  replaceNotes: (notes: Note[]) => void;
   clearHighlight: () => void;
 };
 
@@ -116,6 +117,11 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     setHighlightId((current) => (current === id ? null : current));
   }, []);
 
+  const replaceNotes = useCallback((next: Note[]) => {
+    setNotes(sortNotes(next));
+    setHighlightId(null);
+  }, []);
+
   const clearHighlight = useCallback(() => setHighlightId(null), []);
 
   const value = useMemo(
@@ -126,6 +132,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       addNote,
       updateNote,
       deleteNote,
+      replaceNotes,
       clearHighlight,
     }),
     [
@@ -135,6 +142,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       addNote,
       updateNote,
       deleteNote,
+      replaceNotes,
       clearHighlight,
     ],
   );

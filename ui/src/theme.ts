@@ -6,7 +6,7 @@ export const colors = {
   fill: "#EFEFEF",
   highlight: "#E6E6E6",
   correct: "#C8E6C9",
-  wrong: "#7A1212",
+  wrong: "#FF2A2A",
   danger: "#C62828",
 } as const;
 

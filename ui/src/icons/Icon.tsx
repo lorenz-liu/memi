@@ -25,6 +25,9 @@ type IconDef = {
   viewBox: string;
   paths: string[];
   stroke?: boolean;
+  strokeWidth?: number;
+  strokeLinecap?: "butt" | "round" | "square";
+  strokeLinejoin?: "miter" | "round" | "bevel";
 };
 
 const ICONS: Record<IconName, IconDef> = {
@@ -144,10 +147,20 @@ const ICONS: Record<IconName, IconDef> = {
     ],
   },
   language: {
-    viewBox: "0 0 512 512",
+    viewBox: "0 0 48 48",
+    stroke: true,
+    strokeWidth: 1.5,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
     paths: [
-      "M320,24H16V328H192V496H496V192H320ZM148.305,96,98.093,239.3H132l8.166-23.3H192v80H48V56H288V192H221.332L187.7,96Zm36.317,88H151.378L168,136.562ZM464,224V464H224V224Z",
-      "M317.432,368.48A136.761,136.761,0,0,0,327.521,382.6q-17.4,9.384-39.521,9.4v32c24.141,0,45.71-6.408,64-18.824C370.29,417.592,391.859,424,416,424V392q-22.075,0-39.52-9.407a136.574,136.574,0,0,0,10.088-14.113A166.212,166.212,0,0,0,406.662,320H424V288H368V264H336v24H280v32h17.338A166.212,166.212,0,0,0,317.432,368.48ZM373.53,320a133.013,133.013,0,0,1-14.1,31.52A104.39,104.39,0,0,1,352,361.968a103.546,103.546,0,0,1-6.93-9.651A132.384,132.384,0,0,1,330.466,320Z",
+      "M12.62 24.31 L17.94 11.42",
+      "M23.04 24.35 L17.94 11.42",
+      "M21.34 20.02 L14.39 20.02",
+      "M32.63 25.38 L39.35 25.38",
+      "M35.68,25.38c0,4.34-5.29,11.51-10.59,12.61",
+      "M27.93,32.79c2.13,2.4,5.61,4.74,8.82,5.2",
+      "M9.14 5.5 H26.53 A3.64 3.64 0 0 1 30.17 9.14 V26.53 A3.64 3.64 0 0 1 26.53 30.17 H9.14 A3.64 3.64 0 0 1 5.5 26.53 V9.14 A3.64 3.64 0 0 1 9.14 5.5 Z",
+      "M17.83,30.17v8.69c0,2,1.64,3.64,3.64,3.64h17.38c2,0,3.64-1.64,3.64-3.64V21.47c0-2-1.64-3.64-3.64-3.64h-8.69",
     ],
   },
   vibrate: {
@@ -185,9 +198,13 @@ export function Icon({
           d={d}
           fill={icon.stroke ? "none" : color}
           stroke={icon.stroke ? color : undefined}
-          strokeWidth={icon.stroke ? 1.2 : undefined}
-          strokeLinejoin={icon.stroke ? "miter" : undefined}
-          strokeLinecap={icon.stroke ? "square" : undefined}
+          strokeWidth={icon.stroke ? (icon.strokeWidth ?? 1.2) : undefined}
+          strokeLinejoin={
+            icon.stroke ? (icon.strokeLinejoin ?? "miter") : undefined
+          }
+          strokeLinecap={
+            icon.stroke ? (icon.strokeLinecap ?? "square") : undefined
+          }
         />
       ))}
     </Svg>

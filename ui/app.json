@@ -22,7 +22,21 @@
       },
       "usesCleartextTraffic": true
     },
-    "plugins": ["expo-router", "expo-localization"],
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Thasadith-Regular.ttf",
+            "./assets/fonts/Thasadith-Bold.ttf",
+            "./assets/fonts/Thasadith-Italic.ttf",
+            "./assets/fonts/Thasadith-BoldItalic.ttf"
+          ]
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     },

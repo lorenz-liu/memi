@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   runOnJS,
@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ClozePrompt, gradeAnswers } from "../../src/components/ClozePrompt";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
+import { Text } from "../../src/components/Text";
 import { type ClozeCard, generateCardCloze } from "../../src/lib/api";
 import { shuffleInPlace } from "../../src/lib/id";
 import { type Note, useNotes } from "../../src/store/notes";

@@ -1,16 +1,10 @@
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Animated,
-  FlatList,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Animated, FlatList, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SquareIconButton } from "../../src/components/SquareIconButton";
+import { Text, TextInput } from "../../src/components/Text";
 import { type Note, useNotes } from "../../src/store/notes";
 import { colors, space } from "../../src/theme";
 

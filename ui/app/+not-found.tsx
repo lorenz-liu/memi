@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { SquareIconButton } from "../src/components/SquareIconButton";
+import { Text } from "../src/components/Text";
 import { colors, space } from "../src/theme";
 
 export default function NotFound() {

@@ -1,15 +1,10 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SquareIconButton } from "../../src/components/SquareIconButton";
+import { Text, TextInput } from "../../src/components/Text";
 import { useNotes } from "../../src/store/notes";
 import { colors, space } from "../../src/theme";
 

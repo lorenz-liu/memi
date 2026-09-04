@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Animated, Text, TextInput, View } from "react-native";
-
+import { Animated, View } from "react-native";
 import type { ClozeCard } from "../lib/api";
 import {
   answersMatch,
@@ -8,6 +7,7 @@ import {
   segmentsToLines,
 } from "../lib/cloze";
 import { colors } from "../theme";
+import { Text, TextInput } from "./Text";
 
 type CheckState = "idle" | "correct" | "wrong";
 

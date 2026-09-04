@@ -6,15 +6,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  Text,
-  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Text, TextInput } from "../../src/components/Text";
 import { generateCardTitle } from "../../src/lib/api";
 import { fallbackTitle } from "../../src/lib/cloze";
 import { useNotes } from "../../src/store/notes";
-import { colors, space } from "../../src/theme";
+import { colors, fonts, space } from "../../src/theme";
 
 function deviceLanguage(): string {
   const code = Localization.getLocales()[0]?.languageCode ?? "en";
@@ -111,7 +110,7 @@ export default function AddScreen() {
                 color: colors.bg,
                 fontSize: 18,
                 letterSpacing: 1.4,
-                fontWeight: "600",
+                fontFamily: fonts.bold,
               }}
             >
               ADD

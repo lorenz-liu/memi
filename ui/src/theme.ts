@@ -9,6 +9,20 @@ export const colors = {
   wrong: "#7A1212",
 } as const;
 
+export const fonts = {
+  regular: "Thasadith-Regular",
+  bold: "Thasadith-Bold",
+  italic: "Thasadith-Italic",
+  boldItalic: "Thasadith-BoldItalic",
+} as const;
+
+export const fontAssets = {
+  [fonts.regular]: require("../assets/fonts/Thasadith-Regular.ttf"),
+  [fonts.bold]: require("../assets/fonts/Thasadith-Bold.ttf"),
+  [fonts.italic]: require("../assets/fonts/Thasadith-Italic.ttf"),
+  [fonts.boldItalic]: require("../assets/fonts/Thasadith-BoldItalic.ttf"),
+};
+
 export const space = {
   xs: 8,
   sm: 12,

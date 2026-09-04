@@ -39,12 +39,14 @@ export function NavBar({ state, navigation }: NavBarProps) {
     >
       {TABS.map((tab, index) => {
         const focused = state.index === index;
+        const isAdd = tab.key === "add";
         return (
           <SquareIconButton
             key={tab.key}
             name={tab.icon}
-            active={focused}
-            iconSize={tab.key === "add" ? 30 : 26}
+            inverted={isAdd}
+            iconSize={isAdd ? 30 : 26}
+            color={isAdd ? undefined : focused ? colors.muted : colors.ink}
             onPress={() => {
               const route = state.routes[index];
               if (!route) {

@@ -13,10 +13,38 @@ import {
 import { type AppLanguage, type StringKey, strings } from "../i18n/strings";
 
 export type CardOrder = "repeat" | "shuffle";
-export type TtsVoiceId = "en-US-AvaMultilingualNeural";
+export type VoiceName = "ava" | "emma" | "andrew" | "brian";
+export type TtsVoiceId =
+  | "en-US-AvaMultilingualNeural"
+  | "en-US-EmmaMultilingualNeural"
+  | "en-US-AndrewMultilingualNeural"
+  | "en-US-BrianMultilingualNeural";
 
-export const TTS_VOICES: { id: TtsVoiceId; labelKey: StringKey }[] = [
-  { id: "en-US-AvaMultilingualNeural", labelKey: "voiceDefault" },
+export const TTS_VOICES: {
+  id: TtsVoiceId;
+  name: VoiceName;
+  labelKey: StringKey;
+}[] = [
+  {
+    id: "en-US-AvaMultilingualNeural",
+    name: "ava",
+    labelKey: "voiceAva",
+  },
+  {
+    id: "en-US-EmmaMultilingualNeural",
+    name: "emma",
+    labelKey: "voiceEmma",
+  },
+  {
+    id: "en-US-AndrewMultilingualNeural",
+    name: "andrew",
+    labelKey: "voiceAndrew",
+  },
+  {
+    id: "en-US-BrianMultilingualNeural",
+    name: "brian",
+    labelKey: "voiceBrian",
+  },
 ];
 
 export const DEFAULT_TTS_VOICE: TtsVoiceId = "en-US-AvaMultilingualNeural";

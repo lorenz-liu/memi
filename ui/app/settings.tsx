@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -14,13 +14,10 @@ import {
   importNotes,
   isCanceledError,
 } from "../src/lib/backupFiles";
+import { playVoiceSample, stopSpeak } from "../src/lib/speak";
+import { voiceSample } from "../src/lib/voiceSamples";
 import { useNotes } from "../src/store/notes";
-import {
-  type CardOrder,
-  TTS_VOICES,
-  type TtsVoiceId,
-  useSettings,
-} from "../src/store/settings";
+import { type CardOrder, TTS_VOICES, useSettings } from "../src/store/settings";
 import { colors, space } from "../src/theme";
 
 type Pane = "home" | "language" | "voice" | "order";
@@ -44,6 +41,12 @@ export default function SettingsScreen() {
     null,
   );
   const fileBusy = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      stopSpeak();
+    };
+  }, []);
 
   function showToast(message: string) {
     setToast({ message, token: Date.now() });
@@ -101,6 +104,9 @@ export default function SettingsScreen() {
         <SquareIconButton
           name="close"
           onPress={() => {
+            if (pane === "voice") {
+              stopSpeak();
+            }
             if (pane === "home") {
               router.back();
             } else {
@@ -183,8 +189,8 @@ export default function SettingsScreen() {
                 label={t(item.labelKey)}
                 selected={voice === item.id}
                 onPress={() => {
-                  setVoice(item.id as TtsVoiceId);
-                  setPane("home");
+                  setVoice(item.id);
+                  void playVoiceSample(voiceSample(item.id, language));
                 }}
               />
             ))

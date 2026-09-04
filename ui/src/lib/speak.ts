@@ -117,3 +117,30 @@ export function speakText(
 ) {
   return toggleSpeak(noteId, body.trim() || title, voice);
 }
+
+export async function playVoiceSample(source: number): Promise<void> {
+  stopSpeak();
+  const token = generation;
+  notify("voice-sample");
+  try {
+    await setAudioModeAsync({ playsInSilentMode: true });
+    if (token !== generation) {
+      return;
+    }
+    const next = createAudioPlayer(source);
+    player = next;
+    next.addListener("playbackStatusUpdate", (status) => {
+      if (token !== generation) {
+        return;
+      }
+      if (status.error || status.didJustFinish) {
+        stopSpeak();
+      }
+    });
+    next.play();
+  } catch {
+    if (playingId === "voice-sample") {
+      notify(null);
+    }
+  }
+}

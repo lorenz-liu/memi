@@ -108,11 +108,11 @@ export const strings: Record<AppLanguage, Record<StringKey, string>> = {
     addTitleFailed: "标题生成失败，已改用摘录",
     libraryEmptyTitle: "你的 memi 还是空的",
     libraryEmptyBody:
-      "写下想记住的内容。memi 会把它做成 cloze 闪卡——藏起关键词的段落——方便你填空训练。",
+      "写下想记住的内容。memi 会把它做成闪卡——藏起关键词的段落——方便你填空训练。",
     noMatchingNotes: "没有匹配的笔记",
     trainEmptyTitle: "还没有可以练习的卡片",
     trainEmptyBody:
-      "memi 会根据你的笔记，用 AI 藏起关键词并做成 cloze 闪卡。先添加至少一条笔记，再回来训练。",
+      "memi 会根据你的笔记，用 AI 藏起关键词并做成闪卡。先添加至少一条笔记，再回来训练。",
     generateFailed: "无法生成闪卡",
     speakFailed: "无法朗读",
     importFailed: "导入失败",

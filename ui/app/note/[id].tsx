@@ -1,9 +1,10 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomToast } from "../../src/components/BottomToast";
+import { ConfirmDialog } from "../../src/components/ConfirmDialog";
 import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text, TextInput } from "../../src/components/Text";
 import { speakText, useSpeakingId } from "../../src/lib/speak";
@@ -25,6 +26,9 @@ export default function NoteScreen() {
   );
   const speakingId = useSpeakingId();
   const { t, voice } = useSettings();
+  const [leavePrompt, setLeavePrompt] = useState(false);
+  const allowLeave = useRef(false);
+  const leaveAction = useRef<(() => void) | null>(null);
   const dirty =
     !!note &&
     editing &&
@@ -32,28 +36,33 @@ export default function NoteScreen() {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (event) => {
-      if (!dirty || !note) {
+      if (allowLeave.current || !dirty || !note) {
         return;
       }
       event.preventDefault();
-      Alert.alert(t("saveChangesTitle"), t("saveChangesBody"), [
-        { text: t("cancel"), style: "cancel" },
-        {
-          text: t("discard"),
-          style: "destructive",
-          onPress: () => navigation.dispatch(event.data.action),
-        },
-        {
-          text: t("save"),
-          onPress: () => {
-            updateNote(note.id, { title: draftTitle, body: draftBody });
-            navigation.dispatch(event.data.action);
-          },
-        },
-      ]);
+      Keyboard.dismiss();
+      const action = event.data.action;
+      leaveAction.current = () => navigation.dispatch(action);
+      setLeavePrompt(true);
     });
     return unsubscribe;
-  }, [dirty, draftBody, draftTitle, navigation, note, t, updateNote]);
+  }, [dirty, navigation, note]);
+
+  function stayOnNote() {
+    setLeavePrompt(false);
+    leaveAction.current = null;
+  }
+
+  function leaveNote(save: boolean) {
+    if (save && note) {
+      updateNote(note.id, { title: draftTitle, body: draftBody });
+    }
+    allowLeave.current = true;
+    setLeavePrompt(false);
+    const leave = leaveAction.current;
+    leaveAction.current = null;
+    leave?.();
+  }
 
   if (!note) {
     return (
@@ -189,6 +198,18 @@ export default function NoteScreen() {
       <BottomToast
         key={toast?.token ?? "idle"}
         message={toast?.message ?? null}
+      />
+      <ConfirmDialog
+        visible={leavePrompt}
+        title={t("saveChangesTitle")}
+        body={t("saveChangesBody")}
+        cancelLabel={t("cancel")}
+        onCancel={stayOnNote}
+        actions={[
+          { label: t("discard"), onPress: () => leaveNote(false), kind: "danger" },
+          { label: t("cancel"), onPress: stayOnNote, kind: "muted" },
+          { label: t("save"), onPress: () => leaveNote(true), kind: "primary" },
+        ]}
       />
     </SafeAreaView>
   );

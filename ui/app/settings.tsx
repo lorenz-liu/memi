@@ -22,6 +22,7 @@ import { colors, space } from "../src/theme";
 
 type Pane = "home" | "language" | "voice" | "order" | "about";
 
+const HOME_URL = "https://lorenz.fun";
 const COFFEE_URL = "https://buymeacoffee.com/lorenzliu";
 const COPYRIGHT_YEAR = 2026;
 
@@ -298,6 +299,7 @@ function AboutBody() {
           "本应用由 Lorenz Liu 开发与维护。\ndeveloped and maintained by Lorenz Liu."
         }
       </AboutBlock>
+      <AboutLink url={HOME_URL} />
       <AboutBlock>
         {
           "版权声明 / legal notice:\n未经开发者书面许可，严禁将本软件用于任何形式的商业分发、转发或二次销售。\nunauthorized commercial distribution, modification, or redistribution without prior written consent is strictly prohibited."
@@ -309,28 +311,35 @@ function AboutBody() {
         }
       </AboutBlock>
       <AboutBlock>{"支持开发者 / support:\nbuy me a coffee:"}</AboutBlock>
-      <Pressable
-        accessibilityRole="link"
-        onPress={() => {
-          void Linking.openURL(COFFEE_URL);
-        }}
-        style={({ pressed }) => ({
-          opacity: pressed ? 0.45 : 1,
-          paddingVertical: 4,
-        })}
-      >
-        <Text
-          style={{
-            fontSize: 16,
-            lineHeight: 24,
-            color: colors.ink,
-            textDecorationLine: "underline",
-          }}
-        >
-          {COFFEE_URL}
-        </Text>
-      </Pressable>
+      <AboutLink url={COFFEE_URL} />
     </View>
+  );
+}
+
+function AboutLink({ url }: { url: string }) {
+  return (
+    <Pressable
+      accessibilityRole="link"
+      onPress={() => {
+        void Linking.openURL(url);
+      }}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.45 : 1,
+        paddingVertical: 4,
+        marginBottom: space.md,
+      })}
+    >
+      <Text
+        style={{
+          fontSize: 16,
+          lineHeight: 24,
+          color: colors.ink,
+          textDecorationLine: "underline",
+        }}
+      >
+        {url}
+      </Text>
+    </Pressable>
   );
 }
 

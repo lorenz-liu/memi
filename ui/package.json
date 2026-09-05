@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "android": "expo start --android",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "eas": "eas"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
     "@types/react": "^19.2.18",
+    "eas-cli": "^16.28.0",
     "typescript": "^6.0.3"
   },
   "packageManager": "pnpm@11.13.0"

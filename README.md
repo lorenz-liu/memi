@@ -88,3 +88,40 @@ gcloud config set project YOUR_PROJECT_ID
 ```
 
 Then set `EXPO_PUBLIC_API_URL` in `ui/.env` to the printed `https://*.run.app` URL. Details: [infra/deploy/README.md](infra/deploy/README.md).
+
+## Release the app (EAS)
+
+Store / install builds use [EAS Build](https://docs.expo.dev/build/introduction/) from the repo root. One-time setup:
+
+```bash
+cd ui
+pnpm install
+pnpm eas login
+pnpm eas init   # writes extra.eas.projectId into app.json
+cd ..
+```
+
+Ensure `ui/.env` points at the production API (HTTPS), for example:
+
+```
+EXPO_PUBLIC_API_URL=https://memi-api-xxxxx.run.app
+```
+
+Bundle ID / package (change before first store listing if you want a different id): `app.memi.mobile`.
+
+```bash
+# App Store (build + submit to App Store Connect)
+./release-ios.sh
+
+# iOS build only
+./release-ios.sh --build-only
+
+# Android APK (direct install)
+./release-android.sh
+
+# Google Play AAB (optional submit)
+./release-android.sh --play
+./release-android.sh --play --submit
+```
+
+First iOS/Android build will prompt for Apple / Play credentials (or let EAS manage certificates). App Store and Play listings must already exist for the chosen bundle id / package name before submit succeeds.

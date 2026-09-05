@@ -17,7 +17,7 @@ const en = {
   settingsOrderDetail: "how cards are dealt when you train",
   settingsAutoAdvance: "auto-advance on a perfect card",
   settingsAutoAdvanceDetail: "go to the next card when every blank is correct",
-  settingsHaptics: "haptics",
+  settingsHaptics: "vibrate",
   settingsHapticsDetail: "vibrate when adding a note or checking a card",
   settingsExport: "export",
   settingsExportDetail: "save your library to a file",

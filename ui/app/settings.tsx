@@ -33,10 +33,12 @@ export default function SettingsScreen() {
     language,
     voice,
     cardOrder,
+    autoAdvanceOnCorrect,
     haptics,
     setLanguage,
     setVoice,
     setCardOrder,
+    setAutoAdvanceOnCorrect,
     setHaptics,
   } = useSettings();
   const [pane, setPane] = useState<Pane>("home");
@@ -151,6 +153,12 @@ export default function SettingsScreen() {
                 cardOrder === "shuffle" ? t("orderShuffle") : t("orderRepeat")
               }
               onPress={() => setPane("order")}
+            />
+            <SettingsRow
+              icon="next"
+              title={t("settingsAutoAdvance")}
+              detail={autoAdvanceOnCorrect ? t("on") : t("off")}
+              onPress={() => setAutoAdvanceOnCorrect(!autoAdvanceOnCorrect)}
             />
             <SettingsRow
               icon="vibrate"

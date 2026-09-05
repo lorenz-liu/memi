@@ -53,6 +53,7 @@ type Settings = {
   language: AppLanguage;
   voice: TtsVoiceId;
   cardOrder: CardOrder;
+  autoAdvanceOnCorrect: boolean;
   haptics: boolean;
 };
 
@@ -62,6 +63,7 @@ const DEFAULTS: Settings = {
   language: "en",
   voice: DEFAULT_TTS_VOICE,
   cardOrder: "shuffle",
+  autoAdvanceOnCorrect: true,
   haptics: true,
 };
 
@@ -71,6 +73,7 @@ type SettingsContextValue = Settings & {
   setLanguage: (language: AppLanguage) => void;
   setVoice: (voice: TtsVoiceId) => void;
   setCardOrder: (cardOrder: CardOrder) => void;
+  setAutoAdvanceOnCorrect: (autoAdvanceOnCorrect: boolean) => void;
   setHaptics: (haptics: boolean) => void;
 };
 
@@ -107,6 +110,10 @@ function parseSettings(raw: string): Settings {
     language,
     voice,
     cardOrder,
+    autoAdvanceOnCorrect:
+      typeof parsed.autoAdvanceOnCorrect === "boolean"
+        ? parsed.autoAdvanceOnCorrect
+        : true,
     haptics: typeof parsed.haptics === "boolean" ? parsed.haptics : true,
   };
 }
@@ -156,6 +163,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setLanguage: (language) => patch({ language }),
       setVoice: (voice) => patch({ voice }),
       setCardOrder: (cardOrder) => patch({ cardOrder }),
+      setAutoAdvanceOnCorrect: (autoAdvanceOnCorrect) =>
+        patch({ autoAdvanceOnCorrect }),
       setHaptics: (haptics) => patch({ haptics }),
     }),
     [patch, ready, settings],

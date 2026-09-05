@@ -15,6 +15,8 @@ const en = {
   settingsVoiceDetail: "Used when reading notes aloud",
   settingsOrder: "Flashcard order",
   settingsOrderDetail: "How cards are dealt when you train",
+  settingsAutoAdvance: "Auto-advance on a perfect card",
+  settingsAutoAdvanceDetail: "Go to the next card when every blank is correct",
   settingsHaptics: "Haptics",
   settingsHapticsDetail: "Vibrate when adding a note or checking a card",
   settingsExport: "Export",
@@ -47,6 +49,11 @@ const en = {
   speakFailed: "Could not speak",
   importFailed: "Import failed",
   notFound: "Not found",
+  saveChangesTitle: "Save changes?",
+  saveChangesBody: "You have unsaved edits on this note.",
+  save: "Save",
+  discard: "Don't save",
+  cancel: "Cancel",
 } as const;
 
 export type StringKey = keyof typeof en;
@@ -61,6 +68,9 @@ export const strings: Record<AppLanguage, Record<StringKey, string>> = {
     settingsVoiceDetail: "Utilisée pour lire les notes",
     settingsOrder: "Ordre des cartes",
     settingsOrderDetail: "Comment les cartes sont présentées à l’entraînement",
+    settingsAutoAdvance: "Avancer si la carte est parfaite",
+    settingsAutoAdvanceDetail:
+      "Passer à la carte suivante quand toutes les cases sont correctes",
     settingsHaptics: "Vibrations",
     settingsHapticsDetail:
       "Vibrer à l’ajout d’une note ou à la correction d’une carte",
@@ -94,6 +104,11 @@ export const strings: Record<AppLanguage, Record<StringKey, string>> = {
     speakFailed: "Lecture impossible",
     importFailed: "Échec de l’import",
     notFound: "Introuvable",
+    saveChangesTitle: "Enregistrer les modifications ?",
+    saveChangesBody: "Cette note a des modifications non enregistrées.",
+    save: "Enregistrer",
+    discard: "Ne pas enregistrer",
+    cancel: "Annuler",
   },
   zh: {
     settings: "设置",
@@ -103,6 +118,8 @@ export const strings: Record<AppLanguage, Record<StringKey, string>> = {
     settingsVoiceDetail: "朗读笔记时使用",
     settingsOrder: "闪卡顺序",
     settingsOrderDetail: "训练时卡片的出现顺序",
+    settingsAutoAdvance: "闪卡全对自动翻页",
+    settingsAutoAdvanceDetail: "校对全对后自动进入下一张",
     settingsHaptics: "震动反馈",
     settingsHapticsDetail: "添加笔记或校对闪卡时震动",
     settingsExport: "导出",
@@ -135,5 +152,10 @@ export const strings: Record<AppLanguage, Record<StringKey, string>> = {
     speakFailed: "无法朗读",
     importFailed: "导入失败",
     notFound: "未找到",
+    saveChangesTitle: "保存修改？",
+    saveChangesBody: "当前笔记有未保存的修改。",
+    save: "保存",
+    discard: "不保存",
+    cancel: "取消",
   },
 };

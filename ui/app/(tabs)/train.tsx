@@ -1,11 +1,13 @@
 import {
+  forwardRef,
   type ReactNode,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
 } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Keyboard, Pressable, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
@@ -33,7 +35,9 @@ const clozeCache = new Map<string, ClozeCard>();
 
 export default function TrainScreen() {
   const { notes } = useNotes();
-  const { t, cardOrder, haptics } = useSettings();
+  const { t, cardOrder, autoAdvanceOnCorrect, haptics } = useSettings();
+  const pagerRef = useRef<SwipePagerHandle>(null);
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [deck, setDeck] = useState<Note[]>([]);
   const [index, setIndex] = useState(0);
   const [card, setCard] = useState<ClozeCard | null>(null);
@@ -54,6 +58,9 @@ export default function TrainScreen() {
     return () => {
       if (hintTimer.current) {
         clearTimeout(hintTimer.current);
+      }
+      if (autoAdvanceTimer.current) {
+        clearTimeout(autoAdvanceTimer.current);
       }
     };
   }, []);
@@ -129,6 +136,10 @@ export default function TrainScreen() {
     if (hintTimer.current) {
       clearTimeout(hintTimer.current);
       hintTimer.current = null;
+    }
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
     }
   }, [card, hintOpacity]);
 
@@ -208,13 +219,16 @@ export default function TrainScreen() {
       edges={["top"]}
     >
       <SwipePager
+        ref={pagerRef}
         canPrev={index > 0}
         canNext={index < deck.length - 1}
         onPrev={() => go(-1)}
         onNext={() => go(1)}
       >
-        <View
+        <Pressable
+          accessible={false}
           style={{ flex: 1, paddingHorizontal: space.lg, paddingTop: space.md }}
+          onPress={Keyboard.dismiss}
         >
           <Text
             style={{
@@ -250,18 +264,22 @@ export default function TrainScreen() {
               }}
             />
           ) : null}
-        </View>
+        </Pressable>
       </SwipePager>
 
-      <Animated.View
-        style={[{ minHeight: 28, paddingHorizontal: space.lg }, hintStyle]}
-      >
-        <Text style={{ color: colors.hint, fontSize: 16 }}>
-          {hintText ?? " "}
-        </Text>
-      </Animated.View>
+      <Pressable accessible={false} onPress={Keyboard.dismiss}>
+        <Animated.View
+          style={[{ minHeight: 28, paddingHorizontal: space.lg }, hintStyle]}
+        >
+          <Text style={{ color: colors.hint, fontSize: 16 }}>
+            {hintText ?? " "}
+          </Text>
+        </Animated.View>
+      </Pressable>
 
-      <View
+      <Pressable
+        accessible={false}
+        onPress={Keyboard.dismiss}
         style={{
           paddingHorizontal: space.sm,
           paddingBottom: space.sm,
@@ -280,13 +298,26 @@ export default function TrainScreen() {
             }
             const graded = gradeAnswers(card, answers);
             setCheckStates(graded);
-            hapticCardChecked(
-              haptics,
-              Object.values(graded).every((state) => state === "correct"),
+            const allCorrect = Object.values(graded).every(
+              (state) => state === "correct",
             );
+            hapticCardChecked(haptics, allCorrect);
+            if (
+              autoAdvanceOnCorrect &&
+              allCorrect &&
+              index < deck.length - 1
+            ) {
+              Keyboard.dismiss();
+              if (autoAdvanceTimer.current) {
+                clearTimeout(autoAdvanceTimer.current);
+              }
+              autoAdvanceTimer.current = setTimeout(() => {
+                pagerRef.current?.goNext();
+              }, 550);
+            }
           }}
         />
-      </View>
+      </Pressable>
     </SafeAreaView>
   );
 }
@@ -294,19 +325,23 @@ export default function TrainScreen() {
 const SWIPE_FADE = { duration: 160 };
 const SWIPE_OFFSET = 36;
 
-function SwipePager({
-  children,
-  onPrev,
-  onNext,
-  canPrev,
-  canNext,
-}: {
-  children: ReactNode;
-  onPrev: () => void;
-  onNext: () => void;
-  canPrev: boolean;
-  canNext: boolean;
-}) {
+type SwipePagerHandle = {
+  goNext: () => void;
+};
+
+const SwipePager = forwardRef<
+  SwipePagerHandle,
+  {
+    children: ReactNode;
+    onPrev: () => void;
+    onNext: () => void;
+    canPrev: boolean;
+    canNext: boolean;
+  }
+>(function SwipePager(
+  { children, onPrev, onNext, canPrev, canNext },
+  ref,
+) {
   const translateX = useSharedValue(0);
   const opacity = useSharedValue(1);
   const locked = useSharedValue(false);
@@ -326,6 +361,27 @@ function SwipePager({
       }
     });
   }
+
+  function play(direction: number) {
+    locked.value = true;
+    translateX.value = withTiming(direction * SWIPE_OFFSET, SWIPE_FADE);
+    opacity.value = withTiming(0, SWIPE_FADE, (finished) => {
+      if (finished) {
+        runOnJS(enterFrom)(direction);
+      } else {
+        locked.value = false;
+      }
+    });
+  }
+
+  useImperativeHandle(ref, () => ({
+    goNext() {
+      if (!canNext) {
+        return;
+      }
+      play(-1);
+    },
+  }));
 
   const gesture = Gesture.Pan()
     .activeOffsetX([-24, 24])
@@ -353,16 +409,7 @@ function SwipePager({
         opacity.value = withTiming(1, SWIPE_FADE);
         return;
       }
-      locked.value = true;
-      const direction = goNext ? -1 : 1;
-      translateX.value = withTiming(direction * SWIPE_OFFSET, SWIPE_FADE);
-      opacity.value = withTiming(0, SWIPE_FADE, (finished) => {
-        if (finished) {
-          runOnJS(enterFrom)(direction);
-        } else {
-          locked.value = false;
-        }
-      });
+      play(goNext ? -1 : 1);
     });
 
   const style = useAnimatedStyle(() => ({
@@ -376,4 +423,4 @@ function SwipePager({
       <Animated.View style={style}>{children}</Animated.View>
     </GestureDetector>
   );
-}
+});

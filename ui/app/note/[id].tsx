@@ -1,6 +1,6 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import { Alert, KeyboardAvoidingView, Platform, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomToast } from "../../src/components/BottomToast";
@@ -13,15 +13,47 @@ import { colors, space } from "../../src/theme";
 
 export default function NoteScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { notes, updateNote } = useNotes();
   const note = useMemo(() => notes.find((item) => item.id === id), [id, notes]);
   const [editing, setEditing] = useState(false);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftBody, setDraftBody] = useState("");
   const [toast, setToast] = useState<{ message: string; token: number } | null>(
     null,
   );
   const speakingId = useSpeakingId();
   const { t, voice } = useSettings();
+  const dirty =
+    !!note &&
+    editing &&
+    (draftTitle !== note.title || draftBody !== note.body);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (event) => {
+      if (!dirty || !note) {
+        return;
+      }
+      event.preventDefault();
+      Alert.alert(t("saveChangesTitle"), t("saveChangesBody"), [
+        { text: t("cancel"), style: "cancel" },
+        {
+          text: t("discard"),
+          style: "destructive",
+          onPress: () => navigation.dispatch(event.data.action),
+        },
+        {
+          text: t("save"),
+          onPress: () => {
+            updateNote(note.id, { title: draftTitle, body: draftBody });
+            navigation.dispatch(event.data.action);
+          },
+        },
+      ]);
+    });
+    return unsubscribe;
+  }, [dirty, draftBody, draftTitle, navigation, note, t, updateNote]);
 
   if (!note) {
     return (
@@ -31,6 +63,23 @@ export default function NoteScreen() {
         <SquareIconButton name="close" onPress={() => router.back()} />
       </SafeAreaView>
     );
+  }
+
+  function saveAndStopEditing() {
+    if (!note) {
+      return;
+    }
+    updateNote(note.id, { title: draftTitle, body: draftBody });
+    setEditing(false);
+  }
+
+  function startEditing() {
+    if (!note) {
+      return;
+    }
+    setDraftTitle(note.title);
+    setDraftBody(note.body);
+    setEditing(true);
   }
 
   return (
@@ -74,17 +123,19 @@ export default function NoteScreen() {
           <SquareIconButton
             name="edit"
             active={editing}
-            onPress={() => setEditing((value) => !value)}
+            onPress={() => {
+              if (editing) {
+                saveAndStopEditing();
+              } else {
+                startEditing();
+              }
+            }}
           />
         </View>
         {editing ? (
           <TextInput
-            value={note.title}
-            onChangeText={(title) => {
-              if (title.length > 0) {
-                updateNote(note.id, { title });
-              }
-            }}
+            value={draftTitle}
+            onChangeText={setDraftTitle}
             underlineColorAndroid="transparent"
             style={{
               paddingHorizontal: space.lg,
@@ -109,8 +160,8 @@ export default function NoteScreen() {
         )}
         {editing ? (
           <TextInput
-            value={note.body}
-            onChangeText={(body) => updateNote(note.id, { body })}
+            value={draftBody}
+            onChangeText={setDraftBody}
             multiline
             textAlignVertical="top"
             underlineColorAndroid="transparent"

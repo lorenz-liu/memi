@@ -12,7 +12,7 @@ gcloud auth login
 gcloud config set project YOUR_PROJECT_ID
 ```
 
-3. Put `GROQ_API_KEY` in `infra/.env` (same as local dev), then create the Secret Manager secret and enable APIs:
+3. Put `GROQ_API_KEY` in `infra/.env` (same as local dev), then create the Secret Manager secret, enable APIs, and grant the Compute default service account `roles/run.builder` (needed for `gcloud run deploy --source` on new GCP projects):
 
 ```bash
 ./infra/deploy/deploy.sh bootstrap

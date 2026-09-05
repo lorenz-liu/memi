@@ -79,12 +79,22 @@ bootstrap() {
 
   local project_number
   project_number="$(gcloud projects describe "${PROJECT}" --format='value(projectNumber)')"
-  local runtime_sa="${project_number}-compute@developer.gserviceaccount.com"
+  # New projects use the Compute default SA as Cloud Build's default SA for
+  # `gcloud run deploy --source`. It needs run.builder to read source buckets
+  # and push images; Cloud Run also runs as this SA and needs the secret.
+  local compute_sa="${project_number}-compute@developer.gserviceaccount.com"
 
-  echo "Granting ${runtime_sa} access to ${SECRET}..."
+  echo "Granting ${compute_sa} Cloud Run Builder (source builds)..."
+  gcloud projects add-iam-policy-binding "${PROJECT}" \
+    --member "serviceAccount:${compute_sa}" \
+    --role roles/run.builder \
+    --condition=None \
+    --quiet >/dev/null
+
+  echo "Granting ${compute_sa} access to ${SECRET}..."
   gcloud secrets add-iam-policy-binding "${SECRET}" \
     --project "${PROJECT}" \
-    --member "serviceAccount:${runtime_sa}" \
+    --member "serviceAccount:${compute_sa}" \
     --role roles/secretmanager.secretAccessor \
     --quiet >/dev/null
 

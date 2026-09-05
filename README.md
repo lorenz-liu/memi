@@ -125,3 +125,8 @@ Bundle ID / package (change before first store listing if you want a different i
 ```
 
 First iOS/Android build will prompt for Apple / Play credentials (or let EAS manage certificates). App Store and Play listings must already exist for the chosen bundle id / package name before submit succeeds.
+
+Non-interactive store submit also needs:
+
+- iOS: `submit.production.ios.ascAppId` in `ui/eas.json` (App Store Connect → App Information → Apple ID)
+- Android: a Google Play service account key uploaded to EAS (`cd ui && pnpm eas credentials --platform android`)

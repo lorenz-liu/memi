@@ -100,11 +100,11 @@ sync_eas_env production
 
 echo "Building iOS (production)..."
 if [[ "${BUILD_ONLY}" -eq 1 ]]; then
-  eas build --platform ios --profile production
+  eas build --platform ios --profile production --non-interactive
   echo
   echo "Build started. IPA will appear in the Expo dashboard when finished."
 else
-  eas build --platform ios --profile production --auto-submit
+  eas build --platform ios --profile production --auto-submit --non-interactive
   echo
   echo "Build + App Store Connect submit started."
   echo "Finish App Review in App Store Connect when processing completes."

@@ -108,7 +108,7 @@ fi
 if [[ "${MODE}" == "apk" ]]; then
   sync_eas_env preview
   echo "Building Android APK (preview)..."
-  eas build --platform android --profile preview
+  eas build --platform android --profile preview --non-interactive
   echo
   echo "APK build started. Download it from the Expo dashboard or:"
   echo "  cd ui && ./node_modules/.bin/eas build:list --platform android --limit 1"
@@ -116,11 +116,11 @@ else
   sync_eas_env production
   echo "Building Android App Bundle (production)..."
   if [[ "${SUBMIT}" -eq 1 ]]; then
-    eas build --platform android --profile production --auto-submit
+    eas build --platform android --profile production --auto-submit --non-interactive
     echo
     echo "AAB build + Google Play submit started."
   else
-    eas build --platform android --profile production
+    eas build --platform android --profile production --non-interactive
     echo
     echo "AAB build started. Submit later with:"
     echo "  cd ui && ./node_modules/.bin/eas submit --platform android --profile production --latest"

@@ -148,7 +148,7 @@ export default function SettingsScreen() {
               onPress={() => setPane("voice")}
             />
             <SettingsRow
-              icon="shuffle"
+              icon={cardOrder === "shuffle" ? "shuffle" : "repeat"}
               title={t("settingsOrder")}
               detail={
                 cardOrder === "shuffle" ? t("orderShuffle") : t("orderRepeat")

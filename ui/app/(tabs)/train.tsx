@@ -20,8 +20,8 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ClozePrompt, gradeAnswers } from "../../src/components/ClozePrompt";
-import { SquareIconButton } from "../../src/components/SquareIconButton";
 import { Text } from "../../src/components/Text";
+import { Icon } from "../../src/icons/Icon";
 import { type ClozeCard, generateCardCloze } from "../../src/lib/api";
 import { hapticCardChecked } from "../../src/lib/haptics";
 import { shuffleInPlace } from "../../src/lib/id";
@@ -269,7 +269,14 @@ export default function TrainScreen() {
 
       <Pressable accessible={false} onPress={Keyboard.dismiss}>
         <Animated.View
-          style={[{ minHeight: 28, paddingHorizontal: space.lg }, hintStyle]}
+          style={[
+            {
+              minHeight: 28,
+              paddingHorizontal: space.lg,
+              paddingBottom: space.md,
+            },
+            hintStyle,
+          ]}
         >
           <Text style={{ color: colors.hint, fontSize: 16 }}>
             {hintText ?? " "}
@@ -277,20 +284,24 @@ export default function TrainScreen() {
         </Animated.View>
       </Pressable>
 
-      <Pressable
-        accessible={false}
-        onPress={Keyboard.dismiss}
-        style={{
-          paddingHorizontal: space.sm,
-          paddingBottom: space.sm,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <SquareIconButton name="hint" disabled={!card} onPress={revealHint} />
-        <SquareIconButton
-          name="check"
+      <View style={{ flexDirection: "row" }}>
+        <Pressable
+          accessibilityRole="button"
+          disabled={!card}
+          onPress={revealHint}
+          style={({ pressed }) => ({
+            flex: 1,
+            minHeight: 64,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.fill,
+            opacity: !card ? 0.28 : pressed ? 0.7 : 1,
+          })}
+        >
+          <Icon name="hint" size={26} color={colors.ink} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
           disabled={!card}
           onPress={() => {
             if (!card) {
@@ -316,8 +327,18 @@ export default function TrainScreen() {
               }, 550);
             }
           }}
-        />
-      </Pressable>
+          style={({ pressed }) => ({
+            flex: 1,
+            minHeight: 64,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: colors.ink,
+            opacity: !card ? 0.28 : pressed ? 0.7 : 1,
+          })}
+        >
+          <Icon name="check" size={26} color={colors.bg} />
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }

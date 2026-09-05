@@ -75,3 +75,16 @@ cd ui && pnpm start
 # API tests
 cd infra && uv run pytest
 ```
+
+## Deploy the API (Google Cloud Run)
+
+The app talks to the API over HTTPS. Build and deploy from `infra/`:
+
+```bash
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+./infra/deploy/deploy.sh bootstrap
+./infra/deploy/deploy.sh
+```
+
+Then set `EXPO_PUBLIC_API_URL` in `ui/.env` to the printed `https://*.run.app` URL. Details: [infra/deploy/README.md](infra/deploy/README.md).

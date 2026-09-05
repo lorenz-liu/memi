@@ -388,7 +388,7 @@ function LibraryRow({
         renderRightActions={() => (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Delete"
+            accessibilityLabel="delete"
             onPress={onDelete}
             style={{
               width: DELETE_WIDTH,

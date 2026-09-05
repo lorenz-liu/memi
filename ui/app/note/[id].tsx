@@ -208,7 +208,7 @@ export default function NoteScreen() {
         actions={[
           { label: t("discard"), onPress: () => leaveNote(false), kind: "danger" },
           { label: t("cancel"), onPress: stayOnNote, kind: "muted" },
-          { label: t("save"), onPress: () => leaveNote(true), kind: "primary" },
+          { label: t("save"), onPress: () => leaveNote(true), kind: "ink" },
         ]}
       />
     </SafeAreaView>

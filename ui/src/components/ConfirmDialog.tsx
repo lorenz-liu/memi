@@ -7,7 +7,7 @@ import { Text } from "./Text";
 export type ConfirmAction = {
   label: string;
   onPress: () => void;
-  kind?: "primary" | "danger" | "muted";
+  kind?: "ink" | "danger" | "muted";
 };
 
 export function ConfirmDialog({
@@ -54,15 +54,12 @@ export function ConfirmDialog({
             <Text style={styles.body}>{body}</Text>
           </View>
           {actions.map((action) => {
-            const primary = action.kind === "primary";
             const color =
               action.kind === "danger"
                 ? colors.danger
                 : action.kind === "muted"
                   ? colors.muted
-                  : primary
-                    ? colors.bg
-                    : colors.ink;
+                  : colors.ink;
             return (
               <Pressable
                 key={action.label}
@@ -70,19 +67,10 @@ export function ConfirmDialog({
                 onPress={action.onPress}
                 style={({ pressed }) => [
                   styles.action,
-                  primary ? styles.actionPrimary : null,
                   { opacity: pressed ? 0.45 : 1 },
                 ]}
               >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: primary ? "700" : "400",
-                    color,
-                  }}
-                >
-                  {action.label}
-                </Text>
+                <Text style={{ fontSize: 18, color }}>{action.label}</Text>
               </Pressable>
             );
           })}
@@ -124,10 +112,5 @@ const styles = StyleSheet.create({
     minHeight: 56,
     justifyContent: "center",
     paddingHorizontal: space.lg,
-  },
-  actionPrimary: {
-    backgroundColor: colors.ink,
-    minHeight: 64,
-    alignItems: "center",
   },
 });

@@ -291,24 +291,24 @@ function AboutBody() {
   return (
     <View style={{ paddingHorizontal: space.lg, paddingTop: space.sm }}>
       <AboutBlock>
-        {`Copyright © ${COPYRIGHT_YEAR} Lorenz Liu. All rights reserved.`}
+        {`copyright © ${COPYRIGHT_YEAR} Lorenz Liu. all rights reserved.`}
       </AboutBlock>
       <AboutBlock>
         {
-          "本应用由 Lorenz Liu 开发与维护。\nDeveloped and maintained by Lorenz Liu."
+          "本应用由 Lorenz Liu 开发与维护。\ndeveloped and maintained by Lorenz Liu."
         }
       </AboutBlock>
       <AboutBlock>
         {
-          "版权声明 / Legal Notice:\n未经开发者书面许可，严禁将本软件用于任何形式的商业分发、转发或二次销售。\nUnauthorized commercial distribution, modification, or redistribution without prior written consent is strictly prohibited."
+          "版权声明 / legal notice:\n未经开发者书面许可，严禁将本软件用于任何形式的商业分发、转发或二次销售。\nunauthorized commercial distribution, modification, or redistribution without prior written consent is strictly prohibited."
         }
       </AboutBlock>
       <AboutBlock>
         {
-          "隐私保护 / Privacy:\n本应用不收集、不存储任何个人信息。\nThis app does not collect or track any personal information."
+          "隐私保护 / privacy:\n本应用不收集、不存储任何个人信息。\nthis app does not collect or track any personal information."
         }
       </AboutBlock>
-      <AboutBlock>{"支持开发者 / Support:\nBuy me a coffee:"}</AboutBlock>
+      <AboutBlock>{"支持开发者 / support:\nbuy me a coffee:"}</AboutBlock>
       <Pressable
         accessibilityRole="link"
         onPress={() => {

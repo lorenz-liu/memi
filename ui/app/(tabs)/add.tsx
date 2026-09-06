@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -87,34 +88,60 @@ export default function AddScreen() {
             {error}
           </Text>
         ) : null}
-        <Pressable
-          accessibilityRole="button"
-          disabled={!canSave}
-          onPress={() => void submit()}
-          style={({ pressed }) => ({
-            minHeight: 64,
-            width: "100%",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.ink,
-            opacity: !canSave ? 0.28 : pressed ? 0.7 : 1,
-          })}
-        >
-          {saving ? (
-            <ActivityIndicator color={colors.bg} />
-          ) : (
+        <View style={{ flexDirection: "row" }}>
+          <Pressable
+            accessibilityRole="button"
+            disabled={saving}
+            onPress={() => router.replace("/(tabs)")}
+            style={({ pressed }) => ({
+              flex: 1,
+              minHeight: 64,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.fill,
+              opacity: saving ? 0.28 : pressed ? 0.7 : 1,
+            })}
+          >
             <Text
               style={{
-                color: colors.bg,
+                color: colors.ink,
                 fontSize: 18,
                 letterSpacing: 1.4,
                 fontWeight: "700",
               }}
             >
-              {t("add")}
+              {t("cancel")}
             </Text>
-          )}
-        </Pressable>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            disabled={!canSave}
+            onPress={() => void submit()}
+            style={({ pressed }) => ({
+              flex: 1,
+              minHeight: 64,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.ink,
+              opacity: !canSave ? 0.28 : pressed ? 0.7 : 1,
+            })}
+          >
+            {saving ? (
+              <ActivityIndicator color={colors.bg} />
+            ) : (
+              <Text
+                style={{
+                  color: colors.bg,
+                  fontSize: 18,
+                  letterSpacing: 1.4,
+                  fontWeight: "700",
+                }}
+              >
+                {t("add")}
+              </Text>
+            )}
+          </Pressable>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

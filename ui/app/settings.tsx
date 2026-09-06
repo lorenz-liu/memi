@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Linking, Pressable, ScrollView, View } from "react-native";
+import { Linking, Platform, Pressable, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomToast } from "../src/components/BottomToast";
@@ -36,11 +36,13 @@ export default function SettingsScreen() {
     cardOrder,
     autoAdvanceOnCorrect,
     haptics,
+    iCloud,
     setLanguage,
     setVoice,
     setCardOrder,
     setAutoAdvanceOnCorrect,
     setHaptics,
+    setICloud,
   } = useSettings();
   const [pane, setPane] = useState<Pane>("home");
   const [toast, setToast] = useState<{ message: string; token: number } | null>(
@@ -167,6 +169,14 @@ export default function SettingsScreen() {
               detail={haptics ? t("on") : t("off")}
               onPress={() => setHaptics(!haptics)}
             />
+            {Platform.OS === "ios" ? (
+              <SettingsRow
+                icon="icloud"
+                title={t("settingsICloud")}
+                detail={iCloud ? t("on") : t("off")}
+                onPress={() => setICloud(!iCloud)}
+              />
+            ) : null}
             <SettingsRow
               icon="export"
               title={t("settingsExport")}

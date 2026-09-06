@@ -55,6 +55,7 @@ type Settings = {
   cardOrder: CardOrder;
   autoAdvanceOnCorrect: boolean;
   haptics: boolean;
+  iCloud: boolean;
 };
 
 const STORAGE_KEY = "memi.settings.v1";
@@ -65,6 +66,7 @@ const DEFAULTS: Settings = {
   cardOrder: "shuffle",
   autoAdvanceOnCorrect: true,
   haptics: true,
+  iCloud: true,
 };
 
 type SettingsContextValue = Settings & {
@@ -75,6 +77,7 @@ type SettingsContextValue = Settings & {
   setCardOrder: (cardOrder: CardOrder) => void;
   setAutoAdvanceOnCorrect: (autoAdvanceOnCorrect: boolean) => void;
   setHaptics: (haptics: boolean) => void;
+  setICloud: (iCloud: boolean) => void;
 };
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -115,6 +118,7 @@ function parseSettings(raw: string): Settings {
         ? parsed.autoAdvanceOnCorrect
         : true,
     haptics: typeof parsed.haptics === "boolean" ? parsed.haptics : true,
+    iCloud: typeof parsed.iCloud === "boolean" ? parsed.iCloud : true,
   };
 }
 
@@ -166,6 +170,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       setAutoAdvanceOnCorrect: (autoAdvanceOnCorrect) =>
         patch({ autoAdvanceOnCorrect }),
       setHaptics: (haptics) => patch({ haptics }),
+      setICloud: (iCloud) => patch({ iCloud }),
     }),
     [patch, ready, settings],
   );

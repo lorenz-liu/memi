@@ -6,6 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { ICloudNotesSync } from "../src/store/icloudSync";
 import { NotesProvider } from "../src/store/notes";
 import { SettingsProvider } from "../src/store/settings";
 import { colors, fontAssets } from "../src/theme";
@@ -29,6 +30,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SettingsProvider>
         <NotesProvider>
+          <ICloudNotesSync />
           <StatusBar style="dark" />
           <Stack
             screenOptions={{

@@ -12,6 +12,7 @@
       "bundleIdentifier": "app.memi.mobile",
       "icon": "./assets/icon.png",
       "supportsTablet": true,
+      "usesIcloudStorage": true,
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true,
@@ -46,7 +47,14 @@
         }
       ],
       "expo-sharing",
-      "expo-audio"
+      "expo-audio",
+      [
+        "@oleg_svetlichnyi/expo-icloud-storage",
+        {
+          "containerIdentifier": "iCloud.app.memi.mobile",
+          "containerName": "memi"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

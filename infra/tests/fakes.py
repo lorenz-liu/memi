@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.config import MAX_COMPLETION_TOKENS
+
 class FakeLLM:
     def __init__(self, payload: dict[str, Any] | Exception) -> None:
         self.payload = payload
@@ -11,7 +13,7 @@ class FakeLLM:
         self,
         messages: list[dict[str, str]],
         *,
-        max_completion_tokens: int = 2048,
+        max_completion_tokens: int = MAX_COMPLETION_TOKENS,
         temperature: float = 1,
         reasoning_effort: str = "medium",
     ) -> dict[str, Any]:

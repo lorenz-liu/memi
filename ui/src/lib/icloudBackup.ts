@@ -1,13 +1,19 @@
 import { Directory, File, Paths } from "expo-file-system";
 import { Platform } from "react-native";
-
-import { parseNotesBackup, serializeNotes } from "./backup";
 import type { Note } from "../store/notes";
+import { parseNotesBackup, serializeNotes } from "./backup";
 
 const REMOTE_NAME = "memi-notes.json";
 const LOCAL_NAME = "memi-icloud-notes.json";
+const PLACEHOLDER_NAME = `.${REMOTE_NAME}.icloud`;
 
 type ICloudModule = typeof import("@oleg_svetlichnyi/expo-icloud-storage");
+
+export type ICloudPull =
+  | { status: "unavailable" }
+  | { status: "empty" }
+  | { status: "error" }
+  | { status: "ready"; exportedAt: number; notes: Note[] };
 
 async function loadModule(): Promise<ICloudModule | null> {
   if (Platform.OS !== "ios") {
@@ -35,40 +41,53 @@ export async function iCloudAvailable(): Promise<boolean> {
   }
 }
 
-export async function pullICloudNotes(): Promise<{
-  exportedAt: number;
-  notes: Note[];
-} | null> {
+export async function pullICloudNotes(): Promise<ICloudPull> {
   const icloud = await loadModule();
   if (!icloud?.defaultICloudContainerPath) {
-    return null;
+    return { status: "unavailable" };
   }
-  if (!(await icloud.isICloudAvailableAsync())) {
-    return null;
-  }
-  const exists = await icloud.isExistAsync(REMOTE_NAME, false);
-  if (!exists) {
-    return null;
-  }
-  const downloadDir = new Directory(Paths.cache, "memi-icloud");
-  if (!downloadDir.exists) {
-    downloadDir.create();
-  }
-  const remote = `${icloud.defaultICloudContainerPath}/Documents/${REMOTE_NAME}`;
-  const downloaded = await icloud.downloadFileAsync(remote, downloadDir.uri);
-  const file = new File(downloaded);
-  const raw = await file.text();
-  const notes = parseNotesBackup(raw);
-  let exportedAt = Date.now();
   try {
-    const parsed = JSON.parse(raw) as { exportedAt?: unknown };
-    if (typeof parsed.exportedAt === "number") {
-      exportedAt = parsed.exportedAt;
+    if (!(await icloud.isICloudAvailableAsync())) {
+      return { status: "unavailable" };
     }
   } catch {
-    // parseNotesBackup already accepted the payload.
+    return { status: "unavailable" };
   }
-  return { exportedAt, notes };
+
+  const remote = await resolveRemoteBackup(icloud);
+  if (remote.kind === "unknown") {
+    return { status: "unavailable" };
+  }
+  if (remote.kind === "missing") {
+    return { status: "empty" };
+  }
+
+  try {
+    const downloadDir = new Directory(Paths.cache, "memi-icloud");
+    if (downloadDir.exists) {
+      downloadDir.delete();
+    }
+    downloadDir.create();
+    const downloaded = await icloud.downloadFileAsync(
+      remote.fullPath,
+      downloadDir.uri,
+    );
+    const file = new File(downloaded);
+    const raw = await file.text();
+    const notes = parseNotesBackup(raw);
+    let exportedAt = Date.now();
+    try {
+      const parsed = JSON.parse(raw) as { exportedAt?: unknown };
+      if (typeof parsed.exportedAt === "number") {
+        exportedAt = parsed.exportedAt;
+      }
+    } catch {
+      // parseNotesBackup already accepted the payload.
+    }
+    return { status: "ready", exportedAt, notes };
+  } catch {
+    return { status: "error" };
+  }
 }
 
 export async function pushICloudNotes(notes: Note[]): Promise<boolean> {
@@ -126,4 +145,44 @@ export function notesSignature(notes: Note[]): string {
     .map((note) => `${note.id}:${note.updatedAt}:${note.pinned ? 1 : 0}`)
     .sort()
     .join("|");
+}
+
+async function resolveRemoteBackup(
+  icloud: ICloudModule,
+): Promise<
+  | { kind: "found"; fullPath: string }
+  | { kind: "missing" }
+  | { kind: "unknown" }
+> {
+  const container = icloud.defaultICloudContainerPath;
+  if (!container) {
+    return { kind: "unknown" };
+  }
+
+  for (const name of [REMOTE_NAME, PLACEHOLDER_NAME]) {
+    try {
+      if (await icloud.isExistAsync(name, false)) {
+        return { kind: "found", fullPath: `${container}/Documents/${name}` };
+      }
+    } catch {
+      return { kind: "unknown" };
+    }
+  }
+
+  try {
+    const entries = await icloud.readDirAsync("", { isFullPath: true });
+    const match = entries.find((entry) => {
+      const base = entry.split("/").pop() ?? entry;
+      return base.replace(/^\./, "").replace(/\.icloud$/, "") === REMOTE_NAME;
+    });
+    if (match) {
+      return { kind: "found", fullPath: match };
+    }
+    if (entries.length === 0) {
+      return { kind: "unknown" };
+    }
+    return { kind: "missing" };
+  } catch {
+    return { kind: "unknown" };
+  }
 }

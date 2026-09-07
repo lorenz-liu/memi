@@ -8,7 +8,11 @@ import {
   useState,
 } from "react";
 import { ActivityIndicator, Keyboard, Pressable, View } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import {
+  Gesture,
+  GestureDetector,
+  ScrollView,
+} from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -225,46 +229,58 @@ export default function TrainScreen() {
         onPrev={() => go(-1)}
         onNext={() => go(1)}
       >
-        <Pressable
-          accessible={false}
-          style={{ flex: 1, paddingHorizontal: space.lg, paddingTop: space.md }}
-          onPress={Keyboard.dismiss}
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: space.lg,
+            paddingTop: space.md,
+            paddingBottom: space.lg,
+          }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
-          <Text
-            style={{
-              color: colors.muted,
-              fontSize: 14,
-              fontWeight: "700",
-              marginBottom: space.md,
-            }}
+          <Pressable
+            accessible={false}
+            onPress={Keyboard.dismiss}
+            style={{ flexGrow: 1 }}
           >
-            {current?.title ?? ""}
-          </Text>
-          {loading ? <ActivityIndicator color={colors.ink} /> : null}
-          {error ? (
-            <Text style={{ color: colors.muted, fontSize: 16 }}>{error}</Text>
-          ) : null}
-          {card ? (
-            <ClozePrompt
-              source={current?.body ?? ""}
-              card={card}
-              answers={answers}
-              checkStates={checkStates}
-              focusedIndex={focusedIndex}
-              onFocusBlank={setFocusedIndex}
-              onChangeAnswer={(blankIndex, value) => {
-                setAnswers((currentAnswers) => ({
-                  ...currentAnswers,
-                  [blankIndex]: value,
-                }));
-                setCheckStates((currentStates) => ({
-                  ...currentStates,
-                  [blankIndex]: "idle",
-                }));
+            <Text
+              style={{
+                color: colors.muted,
+                fontSize: 14,
+                fontWeight: "700",
+                marginBottom: space.md,
               }}
-            />
-          ) : null}
-        </Pressable>
+            >
+              {current?.title ?? ""}
+            </Text>
+            {loading ? <ActivityIndicator color={colors.ink} /> : null}
+            {error ? (
+              <Text style={{ color: colors.muted, fontSize: 16 }}>{error}</Text>
+            ) : null}
+            {card ? (
+              <ClozePrompt
+                source={current?.body ?? ""}
+                card={card}
+                answers={answers}
+                checkStates={checkStates}
+                focusedIndex={focusedIndex}
+                onFocusBlank={setFocusedIndex}
+                onChangeAnswer={(blankIndex, value) => {
+                  setAnswers((currentAnswers) => ({
+                    ...currentAnswers,
+                    [blankIndex]: value,
+                  }));
+                  setCheckStates((currentStates) => ({
+                    ...currentStates,
+                    [blankIndex]: "idle",
+                  }));
+                }}
+              />
+            ) : null}
+          </Pressable>
+        </ScrollView>
       </SwipePager>
 
       <Pressable accessible={false} onPress={Keyboard.dismiss}>
@@ -313,11 +329,7 @@ export default function TrainScreen() {
               (state) => state === "correct",
             );
             hapticCardChecked(haptics, allCorrect);
-            if (
-              autoAdvanceOnCorrect &&
-              allCorrect &&
-              index < deck.length - 1
-            ) {
+            if (autoAdvanceOnCorrect && allCorrect && index < deck.length - 1) {
               Keyboard.dismiss();
               if (autoAdvanceTimer.current) {
                 clearTimeout(autoAdvanceTimer.current);
@@ -359,10 +371,7 @@ const SwipePager = forwardRef<
     canPrev: boolean;
     canNext: boolean;
   }
->(function SwipePager(
-  { children, onPrev, onNext, canPrev, canNext },
-  ref,
-) {
+>(function SwipePager({ children, onPrev, onNext, canPrev, canNext }, ref) {
   const translateX = useSharedValue(0);
   const opacity = useSharedValue(1);
   const locked = useSharedValue(false);

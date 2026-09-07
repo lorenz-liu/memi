@@ -1,4 +1,5 @@
 import type { ClozeBlank, ClozeCard } from "./api";
+import { normalizeNotePunctuation } from "./punctuation";
 
 export type ClozeSegment =
   | { type: "text"; key: string; value: string }
@@ -127,7 +128,10 @@ export function segmentsToLines(segments: ClozeSegment[]): ClozeLine[] {
 }
 
 export function normalizeAnswer(value: string): string {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
+  return normalizeNotePunctuation(value)
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 }
 
 export function answersMatch(input: string, target: string): boolean {

@@ -8,7 +8,7 @@ from typing import Any, Protocol
 from dotenv import load_dotenv
 from groq import APIError, Groq
 
-from app.config import DEFAULT_MODEL
+from app.config import DEFAULT_MODEL, MAX_COMPLETION_TOKENS
 
 
 class LLMError(Exception):
@@ -20,7 +20,7 @@ class LLMClient(Protocol):
         self,
         messages: list[dict[str, str]],
         *,
-        max_completion_tokens: int = 2048,
+        max_completion_tokens: int = MAX_COMPLETION_TOKENS,
         temperature: float = 1,
         reasoning_effort: str = "medium",
     ) -> dict[str, Any]: ...
@@ -51,7 +51,7 @@ class GroqLLMClient:
         self,
         messages: list[dict[str, str]],
         *,
-        max_completion_tokens: int = 2048,
+        max_completion_tokens: int = MAX_COMPLETION_TOKENS,
         temperature: float = 1,
         reasoning_effort: str = "medium",
     ) -> dict[str, Any]:

@@ -1,6 +1,12 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BottomToast } from "../../src/components/BottomToast";
@@ -30,9 +36,7 @@ export default function NoteScreen() {
   const allowLeave = useRef(false);
   const leaveAction = useRef<(() => void) | null>(null);
   const dirty =
-    !!note &&
-    editing &&
-    (draftTitle !== note.title || draftBody !== note.body);
+    !!note && editing && (draftTitle !== note.title || draftBody !== note.body);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (event) => {
@@ -142,57 +146,63 @@ export default function NoteScreen() {
           />
         </View>
         {editing ? (
-          <TextInput
-            value={draftTitle}
-            onChangeText={setDraftTitle}
-            underlineColorAndroid="transparent"
-            style={{
-              paddingHorizontal: space.lg,
-              fontSize: 28,
-              fontWeight: "700",
-              color: colors.ink,
-              paddingBottom: space.md,
-            }}
-          />
+          <>
+            <TextInput
+              value={draftTitle}
+              onChangeText={setDraftTitle}
+              underlineColorAndroid="transparent"
+              style={{
+                paddingHorizontal: space.lg,
+                fontSize: 28,
+                fontWeight: "700",
+                color: colors.ink,
+                paddingBottom: space.md,
+              }}
+            />
+            <TextInput
+              value={draftBody}
+              onChangeText={setDraftBody}
+              multiline
+              textAlignVertical="top"
+              underlineColorAndroid="transparent"
+              style={{
+                flex: 1,
+                paddingHorizontal: space.lg,
+                fontSize: 18,
+                lineHeight: 28,
+                color: colors.ink,
+              }}
+            />
+          </>
         ) : (
-          <Text
-            style={{
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{
               paddingHorizontal: space.lg,
-              fontSize: 28,
-              fontWeight: "700",
-              color: colors.ink,
-              paddingBottom: space.md,
+              paddingBottom: space.xl,
             }}
+            keyboardShouldPersistTaps="handled"
           >
-            {note.title}
-          </Text>
-        )}
-        {editing ? (
-          <TextInput
-            value={draftBody}
-            onChangeText={setDraftBody}
-            multiline
-            textAlignVertical="top"
-            underlineColorAndroid="transparent"
-            style={{
-              flex: 1,
-              paddingHorizontal: space.lg,
-              fontSize: 18,
-              lineHeight: 28,
-              color: colors.ink,
-            }}
-          />
-        ) : (
-          <Text
-            style={{
-              paddingHorizontal: space.lg,
-              fontSize: 18,
-              lineHeight: 28,
-              color: colors.ink,
-            }}
-          >
-            {note.body}
-          </Text>
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: "700",
+                color: colors.ink,
+                paddingBottom: space.md,
+              }}
+            >
+              {note.title}
+            </Text>
+            <Text
+              style={{
+                fontSize: 18,
+                lineHeight: 28,
+                color: colors.ink,
+              }}
+            >
+              {note.body}
+            </Text>
+          </ScrollView>
         )}
       </KeyboardAvoidingView>
       <BottomToast
@@ -207,7 +217,11 @@ export default function NoteScreen() {
         onCancel={stayOnNote}
         actions={[
           { label: t("save"), onPress: () => leaveNote(true), kind: "ink" },
-          { label: t("discard"), onPress: () => leaveNote(false), kind: "danger" },
+          {
+            label: t("discard"),
+            onPress: () => leaveNote(false),
+            kind: "danger",
+          },
           { label: t("cancel"), onPress: stayOnNote, kind: "muted" },
         ]}
       />

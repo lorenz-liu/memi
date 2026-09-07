@@ -10,7 +10,6 @@ import {
 } from "react";
 
 import { createId } from "../lib/id";
-import { normalizeNotePunctuation } from "../lib/punctuation";
 
 const STORAGE_KEY = "memi.notes.v1";
 
@@ -39,14 +38,6 @@ type NotesContextValue = {
 
 const NotesContext = createContext<NotesContextValue | null>(null);
 
-function withNormalizedText(note: Note): Note {
-  return {
-    ...note,
-    title: normalizeNotePunctuation(note.title),
-    body: normalizeNotePunctuation(note.body),
-  };
-}
-
 function sortNotes(notes: Note[]): Note[] {
   return [...notes].sort((a, b) => {
     if (a.pinned !== b.pinned) {
@@ -71,7 +62,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         }
         const parsed = JSON.parse(raw) as Note[];
         if (Array.isArray(parsed)) {
-          setNotes(sortNotes(parsed.map(withNormalizedText)));
+          setNotes(sortNotes(parsed));
         }
       } finally {
         if (!cancelled) {
@@ -95,8 +86,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     const now = Date.now();
     const note: Note = {
       id: createId(),
-      title: normalizeNotePunctuation(input.title),
-      body: normalizeNotePunctuation(input.body),
+      title: input.title,
+      body: input.body,
       pinned: false,
       createdAt: now,
       updatedAt: now,
@@ -112,7 +103,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         sortNotes(
           current.map((note) =>
             note.id === id
-              ? withNormalizedText({ ...note, ...patch, updatedAt: Date.now() })
+              ? { ...note, ...patch, updatedAt: Date.now() }
               : note,
           ),
         ),
@@ -127,7 +118,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const replaceNotes = useCallback((next: Note[]) => {
-    setNotes(sortNotes(next.map(withNormalizedText)));
+    setNotes(sortNotes(next));
     setHighlightId(null);
   }, []);
 

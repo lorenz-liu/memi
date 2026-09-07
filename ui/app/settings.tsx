@@ -122,17 +122,6 @@ export default function SettingsScreen() {
             }
           }}
         />
-        <Text
-          style={{
-            flex: 1,
-            fontSize: 20,
-            fontWeight: "700",
-            color: colors.ink,
-            paddingHorizontal: space.sm,
-          }}
-        >
-          {t("settings")}
-        </Text>
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: space.xl }}>
         {pane === "home" ? (

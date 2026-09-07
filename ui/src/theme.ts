@@ -11,11 +11,17 @@ export const colors = {
 } as const;
 
 export const fonts = {
-  regular: "NotoSerifSC",
+  regular: "Thasadith-Regular",
+  italic: "Thasadith-Italic",
+  bold: "Thasadith-Bold",
+  boldItalic: "Thasadith-BoldItalic",
 } as const;
 
 export const fontAssets = {
-  [fonts.regular]: require("../assets/fonts/NotoSerifSC-VariableFont_wght.ttf"),
+  [fonts.regular]: require("../assets/fonts/Thasadith-Regular.ttf"),
+  [fonts.italic]: require("../assets/fonts/Thasadith-Italic.ttf"),
+  [fonts.bold]: require("../assets/fonts/Thasadith-Bold.ttf"),
+  [fonts.boldItalic]: require("../assets/fonts/Thasadith-BoldItalic.ttf"),
 };
 
 export const space = {

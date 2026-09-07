@@ -42,7 +42,10 @@
         "expo-font",
         {
           "fonts": [
-            "./assets/fonts/NotoSerifSC-VariableFont_wght.ttf"
+            "./assets/fonts/Thasadith-Regular.ttf",
+            "./assets/fonts/Thasadith-Italic.ttf",
+            "./assets/fonts/Thasadith-Bold.ttf",
+            "./assets/fonts/Thasadith-BoldItalic.ttf"
           ]
         }
       ],

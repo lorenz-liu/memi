@@ -23,15 +23,19 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 );
 
 function typeface(style: TextProps["style"]): TextStyle {
-  const weight = isBoldWeight(
-    (StyleSheet.flatten(style) as TextStyle | undefined)?.fontWeight,
-  )
-    ? "700"
-    : "400";
+  const flat = StyleSheet.flatten(style) as TextStyle | undefined;
+  const bold = isBoldWeight(flat?.fontWeight);
+  const italic = flat?.fontStyle === "italic";
   return {
-    fontFamily: fonts.regular,
-    fontWeight: weight,
-    fontVariationSettings: `'wght' ${weight}`,
+    fontFamily: bold
+      ? italic
+        ? fonts.boldItalic
+        : fonts.bold
+      : italic
+        ? fonts.italic
+        : fonts.regular,
+    fontWeight: "400",
+    fontStyle: "normal",
   };
 }
 

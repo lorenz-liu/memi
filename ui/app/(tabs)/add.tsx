@@ -107,7 +107,6 @@ export default function AddScreen() {
                 color: colors.ink,
                 fontSize: 18,
                 letterSpacing: 1.4,
-                fontWeight: "700",
               }}
             >
               {t("cancel")}
@@ -134,7 +133,6 @@ export default function AddScreen() {
                   color: colors.bg,
                   fontSize: 18,
                   letterSpacing: 1.4,
-                  fontWeight: "700",
                 }}
               >
                 {t("add")}

@@ -417,7 +417,6 @@ function LibraryRow({
               style={{
                 flex: 1,
                 fontSize: 20,
-                fontWeight: "700",
                 color: colors.ink,
                 paddingVertical: space.md,
               }}

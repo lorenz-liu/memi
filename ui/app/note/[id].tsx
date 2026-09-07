@@ -155,7 +155,7 @@ export default function NoteScreen() {
                 paddingHorizontal: space.lg,
                 fontSize: 28,
                 fontWeight: "700",
-                color: colors.ink,
+                color: colors.muted,
                 paddingBottom: space.md,
               }}
             />
@@ -187,7 +187,7 @@ export default function NoteScreen() {
               style={{
                 fontSize: 28,
                 fontWeight: "700",
-                color: colors.ink,
+                color: colors.muted,
                 paddingBottom: space.md,
               }}
             >

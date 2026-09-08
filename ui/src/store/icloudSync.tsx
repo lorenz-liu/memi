@@ -3,34 +3,27 @@ import { AppState, type AppStateStatus, Platform } from "react-native";
 
 import {
   type ICloudPull,
-  mergeICloudNotes,
   notesSignature,
   pullICloudNotes,
   pushICloudNotes,
+  unionNotes,
 } from "../lib/icloudBackup";
-import type { Note } from "./notes";
 import { useNotes } from "./notes";
 import { useSettings } from "./settings";
 
-const PUSH_DELAY_MS = 1500;
-const PULL_RETRY_DELAYS_MS = [800, 1600, 3200, 5000, 8000];
-const LATE_PULL_DELAYS_MS = [15_000, 30_000, 60_000];
-
-type CloudGate = "unknown" | "empty" | "ready";
+const PUSH_DELAY_MS = 800;
+const OPEN_RETRY_DELAYS_MS = [
+  0, 400, 800, 1200, 2000, 3000, 5000, 8000, 12_000, 20_000, 30_000,
+];
 
 export function ICloudNotesSync() {
   const { notes, ready: notesReady, replaceNotes } = useNotes();
   const { ready: settingsReady, iCloud } = useSettings();
   const notesRef = useRef(notes);
   const enabledRef = useRef(false);
-  const bootstrapped = useRef(false);
-  const pushing = useRef(false);
-  const pulling = useRef(false);
-  const cloudGate = useRef<CloudGate>("unknown");
+  const syncedOpen = useRef(false);
+  const running = useRef(false);
   const pushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const finishPullRef = useRef<
-    (pulled: ICloudPull, adoptEmpty: boolean) => Promise<void>
-  >(async () => undefined);
 
   notesRef.current = notes;
 
@@ -39,8 +32,7 @@ export function ICloudNotesSync() {
       Platform.OS === "ios" && settingsReady && notesReady && iCloud;
     enabledRef.current = enabled;
     if (!enabled) {
-      bootstrapped.current = false;
-      cloudGate.current = "unknown";
+      syncedOpen.current = false;
       if (pushTimer.current) {
         clearTimeout(pushTimer.current);
         pushTimer.current = null;
@@ -49,119 +41,57 @@ export function ICloudNotesSync() {
     }
 
     let cancelled = false;
-    const lateTimers: ReturnType<typeof setTimeout>[] = [];
 
-    function applyPull(pulled: ICloudPull, adoptEmpty: boolean): boolean {
-      if (pulled.status === "ready") {
-        const local = notesRef.current;
-        const merged = mergeICloudNotes(local, pulled);
-        notesRef.current = merged;
-        if (notesSignature(merged) !== notesSignature(local)) {
-          replaceNotes(merged);
-        }
-        cloudGate.current = pulled.notes.length === 0 ? "empty" : "ready";
-        return true;
+    async function syncOpen() {
+      if (cancelled || running.current) {
+        return;
       }
-      if (
-        notesRef.current.length > 0 &&
-        (pulled.status === "empty" ||
-          (adoptEmpty && pulled.status === "unavailable"))
-      ) {
-        cloudGate.current = "empty";
-        return true;
-      }
-      return false;
-    }
-
-    function canPush(next: Note[]): boolean {
-      if (cloudGate.current === "unknown") {
-        return false;
-      }
-      if (next.length === 0) {
-        return bootstrapped.current;
-      }
-      return true;
-    }
-
-    async function pullOnce(): Promise<ICloudPull> {
-      if (pulling.current) {
-        return { status: "unavailable" };
-      }
-      pulling.current = true;
+      running.current = true;
       try {
-        return await pullICloudNotes();
+        const pulled = await pullUntilReadable(() => cancelled);
+        if (cancelled) {
+          return;
+        }
+        if (pulled.status === "ready" || pulled.status === "empty") {
+          const cloudNotes = pulled.status === "ready" ? pulled.notes : [];
+          const local = notesRef.current;
+          const merged = unionNotes(local, cloudNotes);
+          notesRef.current = merged;
+          if (notesSignature(merged) !== notesSignature(local)) {
+            replaceNotes(merged);
+          }
+          await pushICloudNotes(merged);
+          if (!cancelled) {
+            syncedOpen.current = true;
+          }
+          return;
+        }
+        if (pulled.status !== "unavailable" && notesRef.current.length > 0) {
+          await pushICloudNotes(notesRef.current);
+          if (!cancelled) {
+            syncedOpen.current = true;
+          }
+        }
       } catch {
-        return { status: "error" };
+        // Keep local notes. Retry on the next foreground.
       } finally {
-        pulling.current = false;
+        running.current = false;
       }
     }
 
-    async function pullWithRetries(): Promise<ICloudPull> {
-      let last = await pullOnce();
-      if (last.status === "ready") {
-        return last;
-      }
-      for (const delay of PULL_RETRY_DELAYS_MS) {
-        if (cancelled) {
-          return last;
+    void (async () => {
+      await syncOpen();
+      for (const delay of [15_000, 30_000, 60_000, 120_000]) {
+        if (cancelled || syncedOpen.current) {
+          return;
         }
         await sleep(delay);
-        if (cancelled) {
-          return last;
+        if (cancelled || syncedOpen.current) {
+          return;
         }
-        last = await pullOnce();
-        if (last.status === "ready") {
-          return last;
-        }
+        await syncOpen();
       }
-      return last;
-    }
-
-    async function flushPush() {
-      if (
-        !enabledRef.current ||
-        pushing.current ||
-        !canPush(notesRef.current)
-      ) {
-        return;
-      }
-      pushing.current = true;
-      try {
-        await pushICloudNotes(notesRef.current);
-        cloudGate.current = notesRef.current.length === 0 ? "empty" : "ready";
-      } catch {
-        // Retry on the next notes change or foreground/background event.
-      } finally {
-        pushing.current = false;
-      }
-    }
-
-    async function finishPull(pulled: ICloudPull, adoptEmpty: boolean) {
-      if (cancelled) {
-        return;
-      }
-      if (!applyPull(pulled, adoptEmpty)) {
-        return;
-      }
-      bootstrapped.current = true;
-      await flushPush();
-    }
-
-    finishPullRef.current = finishPull;
-
-    void pullWithRetries().then((pulled) => finishPull(pulled, true));
-
-    for (const delay of LATE_PULL_DELAYS_MS) {
-      lateTimers.push(
-        setTimeout(() => {
-          if (cancelled || bootstrapped.current) {
-            return;
-          }
-          void pullWithRetries().then((pulled) => finishPull(pulled, true));
-        }, delay),
-      );
-    }
+    })();
 
     const appSub = AppState.addEventListener(
       "change",
@@ -170,18 +100,8 @@ export function ICloudNotesSync() {
           return;
         }
         if (state === "active") {
-          if (bootstrapped.current) {
-            void pullOnce().then((pulled) => finishPull(pulled, false));
-            return;
-          }
-          void pullWithRetries().then((pulled) => finishPull(pulled, true));
-        }
-        if (state === "background" || state === "inactive") {
-          if (pushTimer.current) {
-            clearTimeout(pushTimer.current);
-            pushTimer.current = null;
-          }
-          void flushPush();
+          syncedOpen.current = false;
+          void syncOpen();
         }
       },
     );
@@ -189,9 +109,6 @@ export function ICloudNotesSync() {
     return () => {
       cancelled = true;
       appSub.remove();
-      for (const timer of lateTimers) {
-        clearTimeout(timer);
-      }
       if (pushTimer.current) {
         clearTimeout(pushTimer.current);
         pushTimer.current = null;
@@ -200,29 +117,15 @@ export function ICloudNotesSync() {
   }, [iCloud, notesReady, replaceNotes, settingsReady]);
 
   useEffect(() => {
-    if (!enabledRef.current) {
+    if (!enabledRef.current || !syncedOpen.current) {
       return;
     }
-    if (!bootstrapped.current) {
-      if (notes.length > 0) {
-        void pullICloudNotes()
-          .then((pulled) => finishPullRef.current(pulled, false))
-          .catch(() => undefined);
-      }
-      return;
-    }
+    void notes;
     if (pushTimer.current) {
       clearTimeout(pushTimer.current);
     }
     pushTimer.current = setTimeout(() => {
-      if (cloudGate.current === "unknown") {
-        return;
-      }
-      void pushICloudNotes(notesRef.current)
-        .then(() => {
-          cloudGate.current = notesRef.current.length === 0 ? "empty" : "ready";
-        })
-        .catch(() => undefined);
+      void pushICloudNotes(notesRef.current).catch(() => undefined);
     }, PUSH_DELAY_MS);
     return () => {
       if (pushTimer.current) {
@@ -233,6 +136,39 @@ export function ICloudNotesSync() {
   }, [notes]);
 
   return null;
+}
+
+async function pullUntilReadable(
+  isCancelled: () => boolean,
+): Promise<ICloudPull> {
+  let last: ICloudPull = { status: "pending" };
+  let emptyStreak = 0;
+
+  for (const delay of OPEN_RETRY_DELAYS_MS) {
+    if (delay > 0) {
+      await sleep(delay);
+    }
+    if (isCancelled()) {
+      return last;
+    }
+    try {
+      last = await pullICloudNotes();
+    } catch {
+      last = { status: "error" };
+    }
+    if (last.status === "ready") {
+      return last;
+    }
+    if (last.status === "empty") {
+      emptyStreak += 1;
+      if (emptyStreak >= 4) {
+        return last;
+      }
+    } else {
+      emptyStreak = 0;
+    }
+  }
+  return last;
 }
 
 function sleep(ms: number): Promise<void> {
